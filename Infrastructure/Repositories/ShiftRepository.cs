@@ -1,0 +1,48 @@
+using Domain.Interfaces;
+using Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
+using ProyectoFinal.Models;
+
+namespace Infrastructure.Repositories;
+
+public class ShiftRepository : IShiftRepository
+{
+    private readonly ScheduleAppContext _context;
+    
+    public ShiftRepository(ScheduleAppContext context)
+    {
+        _context = context;
+    }
+    
+    
+    public async Task<IEnumerable<Shift>> GetAvailableShiftsSinceTodayAsync()
+    {
+        var shifts = _context.Shifts
+            .Include(s => s.Schedule)
+            .Include(s => s.Appointments)
+            .Where( s => s.Date >=  DateOnly.FromDateTime(DateTime.Today) &&
+                         s.Appointments.Count < s.ServicesSlots);
+        return await shifts.ToListAsync();
+    }
+
+    public async Task<bool> ThatShiftExists(int id)
+    {
+        return await _context.Shifts.AnyAsync(s => s.Id == id);
+    }
+
+    public async Task CreateShiftAsync(Shift shift)
+    {
+        await _context.Shifts.AddAsync(shift);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteShiftAsync(int id)
+    {
+        var shift = await _context.Shifts.FindAsync(id);
+        if (shift != null)
+        {
+            _context.Shifts.Remove(shift);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
