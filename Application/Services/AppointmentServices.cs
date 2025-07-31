@@ -25,7 +25,7 @@ public class AppointmentServices
         bool wasBooked = await _appointmentsRepository.CreateAppointmentAsync(AppointmentMapper.toEntity(appointment));
         if (!wasBooked)
         {
-            throw new ValidationException("We couldn't create appointment, someone else booked before you");
+            throw new ValidationException("We couldn't create the appointment, someone else booked before you");
         }
     }
 
@@ -34,7 +34,7 @@ public class AppointmentServices
         await _appointmentValidator.ValidateUpdate(userId, appointment.ShiftId);
         if (appointment.State.HasValue)
         {
-           await _appointmentsRepository.UpdateStateAsync(appointment.ShiftId,appointment.ShiftId, appointment.State.Value);
+           await _appointmentsRepository.UpdateStateAsync(userId,appointment.ShiftId, appointment.State.Value);
         } 
     }
 }

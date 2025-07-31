@@ -5,6 +5,7 @@ using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace ProyectoFinal.Controllers;
 
@@ -38,8 +39,16 @@ public class AppointmentsController : ControllerBase
     [Authorize(Roles = "USER")]
     public async Task<ActionResult> UpdateAppointmentState([FromBody] AppointmentPatch patch)
     {
-        int userId = int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)); // Trust me.
-        await _appointmentServices.UpdateStateAsync(userId, patch);
-        return Ok();
+
+        try
+        {
+            int userId = int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)); // Trust me.
+            await _appointmentServices.UpdateStateAsync(userId, patch);
+            return Ok();
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

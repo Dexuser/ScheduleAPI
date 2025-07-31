@@ -15,7 +15,6 @@ public class AppointmentsRepository : IAppointmentsRepository
     }
 
     // In order to prevent overBooking of the Appointments, we use a Transaction
-    // And we return a TRUE if the transaction was successful Otherwise, we return False and do a Rollback
     public async Task<bool> CreateAppointmentAsync(Appointment appointment)
     {
         using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);

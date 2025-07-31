@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.Interfaces;
@@ -29,7 +30,7 @@ public class TokenProvider(IConfiguration configuration) : ITokenProvider
             Issuer = configuration["Jwt:Issuer"],
             Audience = configuration["Jwt:Audience"]
         };
-
+        
         var handler = new JsonWebTokenHandler();
         string token = handler.CreateToken(tokenDescriptor);
         return token;

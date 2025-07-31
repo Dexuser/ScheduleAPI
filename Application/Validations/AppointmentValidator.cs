@@ -20,7 +20,7 @@ public class AppointmentValidator
     {
         if (! await _shiftsRepository.ThatShiftExists(shiftId))
         {
-            throw new ApplicationException("That shift doesn't exist");
+            throw new ValidationException("That shift doesn't exist"); 
         }
     }
 
@@ -38,6 +38,8 @@ public class AppointmentValidator
 
     public async Task ValidateUpdate(int userId, int shiftId )
     {
+        await this.ThatShiftExists(shiftId);
+        
         // La idea es validar que quien quiere modificar la cita sea el usuario dueño de esa cita.
         // Teniendo en cuenta que un usuario solamente puede tener una cita por dia, basta con que
         // se recupere el unico registro que tiene el mismo usuario y el mismo Turno. para verificar que es del usuario.

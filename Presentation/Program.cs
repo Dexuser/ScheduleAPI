@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using Application.Interfaces;
@@ -9,7 +10,9 @@ using Infrastructure.Context;
 using Infrastructure.Repositories;
 using Microsoft.IdentityModel.Tokens;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -36,6 +39,7 @@ builder.Services.AddScoped<ShiftValidator>();
 
 builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
 builder.Services.AddScoped<AppointmentServices>();
+builder.Services.AddScoped<AppointmentValidator>();
 
 // This Adds the JSON to ENUM value parser.
 builder.Services.AddControllers()
@@ -54,6 +58,7 @@ builder.Services.AddControllers()
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        options.MapInboundClaims = false;
         var config = builder.Configuration;
 
         var key = Encoding.UTF8.GetBytes(config["jwt:Secret"]!);
