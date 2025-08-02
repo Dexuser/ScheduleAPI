@@ -14,10 +14,12 @@ namespace ProyectoFinal.Controllers;
 public class AppointmentsController : ControllerBase
 {
     private readonly AppointmentServices _appointmentServices;
+    private readonly ILogger<AppointmentsController> _logger;
     
-    public AppointmentsController(AppointmentServices appointmentServices)
+    public AppointmentsController(AppointmentServices appointmentServices, ILogger<AppointmentsController> logger)
     {
         _appointmentServices = appointmentServices;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -26,7 +28,10 @@ public class AppointmentsController : ControllerBase
     {
         try
         {
-            await _appointmentServices.CreateAppointmentAsync(create);
+            var user = GetWhoMadeTheRequest();
+            _logger.LogInformation("The user {user} is requesting the creation of a new appointment", user);
+            
+            await _appointmentServices.CreateAppointmentAsync(user, create);
             return Created();
         }
         catch (ValidationException ex)
@@ -43,7 +48,12 @@ public class AppointmentsController : ControllerBase
         try
         {
             int userId = int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)); // Trust me.
-            await _appointmentServices.UpdateStateAsync(userId, patch);
+            var userName = GetWhoMadeTheRequest();
+            _logger.LogInformation(
+                "The user {user} is requesting the update of the state of their appointment associated " +
+                "to the shift of ID {patch.ShiftId}", userName, patch.ShiftId);
+            
+            await _appointmentServices.UpdateStateAsync(userName, userId, patch);
             return Ok();
         }
         catch (ValidationException ex)
@@ -51,4 +61,11 @@ public class AppointmentsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+    
+    private string? GetWhoMadeTheRequest()
+    {
+        string? user = User.FindFirstValue(JwtRegisteredClaimNames.Name); 
+        return user;
+    }
+    
 }

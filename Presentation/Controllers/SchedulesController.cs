@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Application.Dtos;
 using Application.Services;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using ProyectoFinal.Models;
 
 namespace ProyectoFinal.Controllers;
@@ -13,16 +15,22 @@ namespace ProyectoFinal.Controllers;
 public class SchedulesController : ControllerBase
 {
     private readonly ScheduleServices _scheduleServices;
+    private readonly ILogger<SchedulesController> _logger;
 
-    public SchedulesController(ScheduleServices scheduleServices)
+    public SchedulesController(ScheduleServices scheduleServices, ILogger<SchedulesController> logger)
     {
         _scheduleServices = scheduleServices;
+        _logger = logger;
     }
 
     [HttpGet]
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> GetAllSchedules()
     {
+
+        var admin = GetWhoMadeTheRequest();
+        _logger.LogInformation("The Admin {Name} is requesting all the schedules", admin);       
+        
         var schedules = await _scheduleServices.GetAllSchedulesAsync();
         if (schedules.Count() == 0)
             return NotFound();
@@ -35,7 +43,10 @@ public class SchedulesController : ControllerBase
     {
         try
         {
-            await _scheduleServices.CreateScheduleAsync(schedule);
+            var admin = GetWhoMadeTheRequest();
+            _logger.LogInformation("The Admin {Name} is requesting to create a new schedule", admin);
+            
+            await _scheduleServices.CreateScheduleAsync(admin, schedule);
             return Created();
         }
         catch (ValidationException ex)
@@ -44,13 +55,17 @@ public class SchedulesController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+
+
+    [HttpPut("{scheduleId}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> UpdateSchedule([FromBody] ScheduleCreate schedule, [FromRoute] int id)
+    public async Task<IActionResult> UpdateSchedule([FromBody] ScheduleCreate schedule, [FromRoute] int scheduleId)
     {
         try
         {
-            await _scheduleServices.UpdateScheduleAsync(id, schedule);
+            var admin= GetWhoMadeTheRequest();
+            _logger.LogInformation("The Admin {Name} is requesting to update the schedule of ID: {scheduleId}", admin, scheduleId);
+            await _scheduleServices.UpdateScheduleAsync(admin, scheduleId, schedule);
             return Ok();
         }
         catch (ValidationException ex)
@@ -59,18 +74,26 @@ public class SchedulesController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{scheduleId}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> DeleteSchedule([FromRoute] int id)
+    public async Task<IActionResult> DeleteSchedule([FromRoute] int scheduleId)
     {
         try
         {
-            await _scheduleServices.DeleteScheduleAsync(id);
+            var admin = GetWhoMadeTheRequest();
+            _logger.LogInformation("The Admin {Name} is requesting to delete the schedule of ID: {scheduleId}", admin, scheduleId);
+            await _scheduleServices.DeleteScheduleAsync(admin, scheduleId);
             return NoContent();
         }
         catch (ValidationException ex)
         {
             return BadRequest(ex.Message);
         }
+    }
+    
+    private string? GetWhoMadeTheRequest()
+    {
+        string? admin = User.FindFirstValue(JwtRegisteredClaimNames.Name); 
+        return admin;
     }
 }

@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# Luis
+./Presentation/Logs
+
 # dotenv files
 .env
 

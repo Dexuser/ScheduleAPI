@@ -9,6 +9,8 @@ using Infrastructure;
 using Infrastructure.Context;
 using Infrastructure.Repositories;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Filters;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +42,19 @@ builder.Services.AddScoped<ShiftValidator>();
 builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
 builder.Services.AddScoped<AppointmentServices>();
 builder.Services.AddScoped<AppointmentValidator>();
+
+
+//I'm going to use Serilog as my logger. Also, I'm only going to log anything related to my classes or my code. 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Filter.ByExcluding(Matching.FromSource("Microsoft"))
+    .Filter.ByExcluding(Matching.FromSource("System"))
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
 
 // This Adds the JSON to ENUM value parser.
 builder.Services.AddControllers()
@@ -97,7 +112,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
-
 
 app.UseAuthentication(); // Authen
 app.UseAuthorization(); // Authoriz

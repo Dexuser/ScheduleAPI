@@ -25,9 +25,29 @@ public class ShiftRepository : IShiftRepository
         return await shifts.ToListAsync();
     }
 
+    public async Task<IEnumerable<Shift>> GetShiftsWithThisUserAsync(int userId)
+    {
+        return await  _context.Shifts
+            .Include(s => s.Schedule)
+            .Include(s => s.Appointments)
+            .Where(s => s.Appointments
+                .Any(a => a.UserId == userId)).ToListAsync();
+    }
+
     public async Task<bool> ThatShiftExists(int id)
     {
         return await _context.Shifts.AnyAsync(s => s.Id == id);
+    }
+
+    public async Task<bool> ThatShiftStillAcceptsAppointments(int shiftId)
+    {
+        var shift = await _context.Shifts
+            .Include(s => s.Appointments)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == shiftId);
+        
+        return (shift.Appointments.Count < shift.ServicesSlots);
+        
     }
 
     public async Task CreateShiftAsync(Shift shift)

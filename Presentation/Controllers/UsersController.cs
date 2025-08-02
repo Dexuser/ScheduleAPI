@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Application.Dtos;
 using Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +12,12 @@ namespace ProyectoFinal.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly UserServices _userServices;
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserServices userServices)
+    public UsersController(UserServices userServices, ILogger<UsersController> logger)
     {
         _userServices = userServices;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -23,6 +27,7 @@ public class UsersController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Someone requested to create (register) a new user");
             // well, if we are in this point, the model received is valid.
             await _userServices.CreateUserAsync(user);
             return Created();
@@ -40,6 +45,7 @@ public class UsersController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("The user: {UserName} requested access to the system", user.UserName);
             string? token = await _userServices.LoginAsync(user);
             return Ok(token);
         }

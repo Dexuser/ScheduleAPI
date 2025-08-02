@@ -37,4 +37,15 @@ public class EnabledDateRepository : IEnabledDateRepository
         await _context.EnabledDates.AddAsync(enabledDate);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<bool> AlreadyExistsThatDateRange(DateOnly starDate, DateOnly endDate)
+    {
+        return await _context.EnabledDates.AnyAsync(d => d.StartDate == starDate && d.EndDate == endDate);
+    }
+
+
+    public async Task<EnabledDate?> GetEnabledDateByIdAsync(int id)
+    {
+        return await _context.EnabledDates.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+    }
 }
