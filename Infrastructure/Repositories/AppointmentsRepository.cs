@@ -1,3 +1,4 @@
+using Domain.Enums;
 using Domain.Interfaces;
 using Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;

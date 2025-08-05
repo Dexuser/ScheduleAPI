@@ -1,4 +1,4 @@
-namespace ProyectoFinal.Models;
+namespace Domain.Enums;
 
 // En la base de datos se guardaria directametne el numero
 public enum Role

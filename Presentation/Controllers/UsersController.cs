@@ -1,5 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Application.Dtos;
 using Application.Services;
 using Microsoft.AspNetCore.Authorization;

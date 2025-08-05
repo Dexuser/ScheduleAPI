@@ -32,6 +32,16 @@ public class UserRepository : IUserRepository
         }
     }
 
+    public Task<bool> ThisUserExists(string user)
+    {
+        return _context.Users.AnyAsync(u => u.UserName == user);
+    }
+
+    public Task<bool> ThisEmailExists(string email)
+    {
+        return  _context.Users.AnyAsync(u => u.Email == email);
+    }
+
     public async Task<User?> GetUserByUserNameAsync(string username)
     {
         return await _context.Users

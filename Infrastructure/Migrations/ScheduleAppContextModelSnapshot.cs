@@ -164,6 +164,9 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("User_Id_PK");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("UserName")
                         .IsUnique();
 

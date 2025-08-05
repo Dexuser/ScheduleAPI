@@ -1,4 +1,4 @@
-namespace ProyectoFinal.Models;
+namespace Domain.Enums;
 
 public enum AppointmentState
 {

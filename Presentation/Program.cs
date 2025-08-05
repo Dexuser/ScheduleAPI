@@ -1,7 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
-using Application.Interfaces;
 using Application.Services;
 using Application.Validations;
 using Domain.Interfaces;
@@ -23,8 +21,10 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSqlServer<ScheduleAppContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
 
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
+builder.Services.AddScoped<UserValidator>();
 builder.Services.AddScoped<UserServices>();
 
 builder.Services.AddScoped<IEnabledDateRepository, EnabledDateRepository>();

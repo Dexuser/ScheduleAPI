@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using Application.Dtos;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
-using ProyectoFinal.Models;
 
 namespace Application.Validations;
 

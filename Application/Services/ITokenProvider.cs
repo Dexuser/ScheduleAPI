@@ -1,6 +1,6 @@
 using ProyectoFinal.Models;
 
-namespace Application.Interfaces;
+namespace Application.Services;
 
 public interface ITokenProvider
 {
