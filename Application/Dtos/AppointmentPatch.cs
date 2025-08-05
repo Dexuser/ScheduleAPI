@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Domain.Enums;
 using ProyectoFinal.Models;
 
 namespace Application.Dtos;

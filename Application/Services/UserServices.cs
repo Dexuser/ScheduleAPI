@@ -1,6 +1,7 @@
 using Application.Dtos;
-using Application.Interfaces;
 using Application.Mappers;
+using Application.Validations;
+using Domain.Enums;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using ProyectoFinal.Models;
@@ -12,16 +13,20 @@ public class UserServices
     private readonly IUserRepository _repository;
     private readonly ITokenProvider _tokenProvider;
     private readonly ILogger<UserServices> _logger;
+    private readonly UserValidator _userValidator;
 
-    public UserServices(IUserRepository repository, ITokenProvider tokenProvider, ILogger<UserServices> logger)
+    public UserServices(IUserRepository repository, ITokenProvider tokenProvider, ILogger<UserServices> logger, UserValidator userValidator)
     {
         _repository = repository;
         _tokenProvider = tokenProvider;
         _logger = logger;
+        _userValidator = userValidator;
     }
 
     public async Task CreateUserAsync(UserCreate userCreate)
     {
+        await _userValidator.ValidateAsync(userCreate);
+        
         //We hash the password
         User newUser = UserMapper.ToEntity(userCreate);
         newUser.Role = Role.USER; // And we set this property. The day that we need Admins we will do another Method.

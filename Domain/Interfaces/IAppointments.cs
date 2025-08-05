@@ -1,3 +1,4 @@
+using Domain.Enums;
 using ProyectoFinal.Models;
 
 namespace Domain.Interfaces;

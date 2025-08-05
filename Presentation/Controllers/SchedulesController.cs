@@ -2,11 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Application.Dtos;
 using Application.Services;
-using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
-using ProyectoFinal.Models;
 
 namespace ProyectoFinal.Controllers;
 

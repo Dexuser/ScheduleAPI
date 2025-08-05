@@ -1,3 +1,4 @@
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using ProyectoFinal.Models;
 
@@ -136,6 +137,10 @@ public class ScheduleAppContext : DbContext
             // We just made the Relation of Users - Appointments.           
             entity.HasIndex(e => e.UserName)
                 .IsUnique();
+            
+            entity.HasIndex(e => e.Email)
+                .IsUnique();
+
         });
     }
 }

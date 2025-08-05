@@ -4,7 +4,6 @@ using Application.Mappers;
 using Application.Validations;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
-using ProyectoFinal.Models;
 
 namespace Application.Services;
 
