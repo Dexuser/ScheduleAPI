@@ -14,7 +14,7 @@ public class ScheduleAppContextFactory : IDesignTimeDbContextFactory<ScheduleApp
     {
         var optionsBuilder = new DbContextOptionsBuilder<ScheduleAppContext>();
         optionsBuilder.UseSqlServer(
-            "Server=Dev-Ops; Database=ScheduleApp; TrustServerCertificate=True; Trusted_Connection=True;", // usa tu cadena real
+            "Server=LAPTOP-T7P92N9J; Database=ScheduleApp; Trusted_Connection=True; TrustServerCertificate=True;", // usa tu cadena real
             b => b.MigrationsAssembly("Infrastructure")); // asegura que las migraciones se generen aquí
 
         return new ScheduleAppContext(optionsBuilder.Options);

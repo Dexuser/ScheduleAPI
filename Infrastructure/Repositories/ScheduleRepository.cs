@@ -16,6 +16,7 @@ public class ScheduleRepository : IScheduleRepository
 
     public async Task<IEnumerable<Schedule>> GetAllSchedulesAsync()
     {
+        
         return await _context.Schedules.ToListAsync();
     }
 
