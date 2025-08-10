@@ -33,7 +33,7 @@ public class UsersController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest( new {message =  ex.Message});
         }
     }
 
@@ -45,12 +45,12 @@ public class UsersController : ControllerBase
         try
         {
             _logger.LogInformation("The user: {UserName} requested access to the system", user.UserName);
-            string? token = await _userServices.LoginAsync(user);
-            return Ok(token);
+            string? tokenJWT = await _userServices.LoginAsync(user);
+            return Ok(new { token = tokenJWT });
         }
         catch (ValidationException ex)
         {
-            return Unauthorized(ex.Message);
+            return Unauthorized( new {message =  ex.Message});
         }
     }
 }

@@ -26,7 +26,12 @@ public class AppointmentsController : ControllerBase
     public async Task<ActionResult> CreateAppointmentCreate([FromBody] AppointmentCreate create)
     {
         int userId = Int32.Parse( User.FindFirstValue(JwtRegisteredClaimNames.Sub));
-        if (userId != create.UserId) return BadRequest("The userId in the header doesn't match the userId on the body");
+        if (userId != create.UserId)
+        {
+            string text = "The userId in the header doesn't match the userId on the body";
+            return BadRequest(new {message = text});
+        }
+        
         try
         {
             var user = GetWhoMadeTheRequest();
@@ -37,7 +42,7 @@ public class AppointmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -59,7 +64,7 @@ public class AppointmentsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
     
