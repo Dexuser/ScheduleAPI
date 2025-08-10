@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Application.Dtos;
 using Application.Mappers;
 using Application.Validations;
@@ -46,7 +47,7 @@ public class UserServices
     public async Task<string?> LoginAsync(UserLogin credentials)
     {
         User? user = await _repository.GetUserByUserNameAsync(credentials.UserName);
-        if (user == null) throw new Exception("User not found");
+        if (user == null) throw new ValidationException("User not found");
 
 
         // Hash validation
@@ -62,6 +63,6 @@ public class UserServices
         _logger.LogWarning(
             "The user {UserName} tried to log in to the system but failed (incorrect password)",
             credentials.UserName);
-        throw new Exception("Incorrect password"); // otherwise
+        throw new ValidationException("Incorrect password"); // otherwise
     }
 }

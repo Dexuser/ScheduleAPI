@@ -4,7 +4,6 @@ using Application.Dtos;
 using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.JsonWebTokens;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace ProyectoFinal.Controllers;
@@ -26,6 +25,8 @@ public class AppointmentsController : ControllerBase
     [Authorize(Roles = "USER")]
     public async Task<ActionResult> CreateAppointmentCreate([FromBody] AppointmentCreate create)
     {
+        int userId = Int32.Parse( User.FindFirstValue(JwtRegisteredClaimNames.Sub));
+        if (userId != create.UserId) return BadRequest("The userId in the header doesn't match the userId on the body");
         try
         {
             var user = GetWhoMadeTheRequest();

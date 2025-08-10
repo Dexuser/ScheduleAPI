@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Infrastructure;
 
 // So, ASP.NET Doesn't know how to convert a JSON Object to a DateOnly Object. 
-// This code do that. You only need to register this class to the builder.Services
+// This code does that. You only need to register this class to the builder.Services
 public class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {
     private const string Format = "dd-MM-yyyy"; // El formato esperado del string JSON

@@ -27,11 +27,13 @@ public class ShiftRepository : IShiftRepository
 
     public async Task<IEnumerable<Shift>> GetShiftsWithThisUserAsync(int userId)
     {
-        return await  _context.Shifts
+        // retorna todos los Shifts que sean desde hoy al futuro y que contengan una cita de ese usuario.
+        // LINQ te amo.
+        return await _context.Shifts
             .Include(s => s.Schedule)
             .Include(s => s.Appointments)
-            .Where(s => s.Appointments
-                .Any(a => a.UserId == userId)).ToListAsync();
+            .Where( s => s.Date >= DateOnly.FromDateTime(DateTime.Today) && 
+                         s.Appointments.Any(a => a.UserId == userId)).ToListAsync();
     }
 
     public async Task<bool> ThatShiftExists(int id)

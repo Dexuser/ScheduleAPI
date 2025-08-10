@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Application.Dtos;
 using Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,7 @@ public class UsersController : ControllerBase
             await _userServices.CreateUserAsync(user);
             return Created();
         }
-        catch (Exception ex)
+        catch (ValidationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -47,9 +48,9 @@ public class UsersController : ControllerBase
             string? token = await _userServices.LoginAsync(user);
             return Ok(token);
         }
-        catch (Exception ex)
+        catch (ValidationException ex)
         {
-            return BadRequest(ex.Message);
+            return Unauthorized(ex.Message);
         }
     }
 }

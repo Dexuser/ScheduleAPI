@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Application.Dtos;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -23,16 +24,16 @@ public class UserValidator
                 "Someone failed to create a new user. (User {userCreate.UserName} already exists)",
                 userCreate.UserName);
             
-            throw new ApplicationException("User already exists");
+            throw new ValidationException("User already exists");
         }
         
         if (await _userRepository.ThisEmailExists(userCreate.Email))
         {
             _logger.LogError(
-                "Someone failed to create a new user. (email {userCreate.UserName} already exists)",
-                userCreate.UserName);
+                "Someone failed to create a new user. (email {userCreate.Email} already exists)",
+                userCreate.Email);
             
-            throw new ApplicationException("email already exists");
+            throw new ValidationException("email already exists");
         }
     }
     
