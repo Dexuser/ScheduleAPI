@@ -57,6 +57,11 @@ public class ScheduleRepository : IScheduleRepository
         return schedule;
     }
 
+    public Task<bool> ExistsAsync(int id)
+    {
+        return _context.Schedules.AnyAsync(s => s.Id == id);
+    }
+
     public async Task<Schedule?> FindByStartTimeAndEndTime(TimeOnly startTime, TimeOnly endTime)
     {
         Schedule? schedule = await _context.Schedules

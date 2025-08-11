@@ -8,16 +8,19 @@ namespace Application.Validations;
 public class ShiftValidator
 {
     private readonly IEnabledDateRepository _enabledDateRepository;
+    private readonly IScheduleRepository _scheduleRepository;
     private readonly ILogger<ShiftValidator> _logger;
     
-    public ShiftValidator(IEnabledDateRepository enabledDateRepository, ILogger<ShiftValidator> logger)
+    public ShiftValidator(IEnabledDateRepository enabledDateRepository, ILogger<ShiftValidator> logger, IScheduleRepository scheduleRepository)
     {
         _enabledDateRepository = enabledDateRepository;
         _logger = logger;
+        _scheduleRepository = scheduleRepository;
     }
 
     public async Task ValidateAsync(string adminWhoRequested, ShiftCreate shift)
     {
+        // prevents shifts in the past
         if (shift.Date < DateOnly.FromDateTime(DateTime.Today))
         {
             _logger.LogError(
@@ -28,6 +31,7 @@ public class ShiftValidator
             throw new ValidationException("The date of the shift cannot be in the past");
         }
 
+        // prevents negative or zero Services slots
         if (shift.ServicesSlots < 1)
         {
             _logger.LogError(
@@ -37,7 +41,19 @@ public class ShiftValidator
 
             throw new ValidationException("The service slots cannot be less than 1");
         }
+        
+        // prevents invalid schedules.
+        if (!await _scheduleRepository.ExistsAsync(shift.ScheduleId))
+        {
+            _logger.LogError(
+                "The admin {adminWhoRequested} failed to add a new shift. " +
+                "(That schedule doesn't exist)",
+                adminWhoRequested);
 
+            throw new ValidationException("That schedule doesn't exist");
+        }
+
+        // prevents the creation of a shift in an invalid day
         var enabledDates = await _enabledDateRepository.GetEnabledDatesAsync();
         bool isContainedInADateRange = false;
         foreach (var enabledDate in enabledDates)
