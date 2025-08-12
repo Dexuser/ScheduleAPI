@@ -23,7 +23,7 @@ public class SchedulesController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> GetAllSchedules()
+    public async Task<ActionResult<IEnumerable<ScheduleDto>>> GetAllSchedules()
     {
 
         var admin = GetWhoMadeTheRequest();
@@ -37,7 +37,7 @@ public class SchedulesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> CreateSchedule([FromBody] ScheduleCreate schedule)
+    public async Task<ActionResult> CreateSchedule([FromBody] ScheduleCreate schedule)
     {
         try
         {
@@ -55,9 +55,9 @@ public class SchedulesController : ControllerBase
 
 
 
-    [HttpPut("{scheduleId}")]
+    [HttpPut("{scheduleId:int}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> UpdateSchedule([FromBody] ScheduleCreate schedule, [FromRoute] int scheduleId)
+    public async Task<ActionResult> UpdateSchedule([FromBody] ScheduleCreate schedule, [FromRoute] int scheduleId)
     {
         try
         {
@@ -72,9 +72,9 @@ public class SchedulesController : ControllerBase
         }
     }
 
-    [HttpDelete("{scheduleId}")]
+    [HttpDelete("{scheduleId:int}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> DeleteSchedule([FromRoute] int scheduleId)
+    public async Task<ActionResult> DeleteSchedule([FromRoute] int scheduleId)
     {
         try
         {

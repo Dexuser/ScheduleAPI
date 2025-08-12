@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     [AllowAnonymous]
     [Route("Register")]
-    public async Task<IActionResult> CreateUser([FromBody] UserCreate user)
+    public async Task<ActionResult> CreateUser([FromBody] UserCreate user)
     {
         try
         {
@@ -40,7 +40,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     [AllowAnonymous]
     [Route("Login")]
-    public async Task<IActionResult> Login([FromBody] UserLogin user)
+    public async Task<ActionResult<Object>> Login([FromBody] UserLogin user)
     {
         try
         {

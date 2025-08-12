@@ -23,7 +23,7 @@ public class EnabledDatesController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> GetEnabledDates()
+    public async Task<ActionResult<IEnumerable<EnabledDateDto>>> GetEnabledDates()
     {
         var admin = GetWhoMadeTheRequest();
         _logger.LogInformation("The Admin {Name} is requesting all the enabled dates", admin);
@@ -37,7 +37,7 @@ public class EnabledDatesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> CreateEnabledDate([FromBody] EnableDateCreate dateRange)
+    public async Task<ActionResult> CreateEnabledDate([FromBody] EnableDateCreate dateRange)
     {
         try
         {
@@ -53,9 +53,9 @@ public class EnabledDatesController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> DeleteEnabledDate(int id)
+    public async Task<ActionResult> DeleteEnabledDate(int id)
     {
         try
         {

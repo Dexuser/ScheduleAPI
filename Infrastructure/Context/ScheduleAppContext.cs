@@ -141,6 +141,17 @@ public class ScheduleAppContext : DbContext
             entity.HasIndex(e => e.Email)
                 .IsUnique();
 
+            entity.HasData(
+                new User
+                {
+                    Id = 1,
+                    UserName = "admin",
+                    Password = "$2a$11$isXTfmHGobkbBdrnlICaMO1DXjxTtaWahqOgKsBDLejKWotlWiTF2",
+                    Email = "test@gmail.com",
+                    Role = Role.ADMIN
+                }
+                );
+
         });
     }
 }

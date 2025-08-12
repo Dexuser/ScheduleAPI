@@ -24,7 +24,7 @@ public class ShiftsController : ControllerBase
     
     [HttpGet]
     [Authorize(Roles = "ADMIN,USER")] 
-    public async Task<IActionResult> GetAvailableShiftsSinceTodayAsync()
+    public async Task<ActionResult<IEnumerable<ShiftDto>>> GetAvailableShiftsSinceTodayAsync()
     {
         var user = GetWhoMadeTheRequest();
         var role = User.FindFirstValue(ClaimTypes.Role);
@@ -41,7 +41,7 @@ public class ShiftsController : ControllerBase
     [HttpGet]
     [Route("OfUser")]
     [Authorize(Roles = "USER")]
-    public async Task<IActionResult> GetShiftsWithThisUserAsync()
+    public async Task<ActionResult<IEnumerable<ShiftDto>>> GetShiftsWithThisUserAsync()
     {
         var userId = int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)); // taken from the token
         var username = GetWhoMadeTheRequest();
@@ -59,7 +59,7 @@ public class ShiftsController : ControllerBase
     
     [HttpPost]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> CreateShift([FromBody] ShiftCreate shift)
+    public async Task<ActionResult> CreateShift([FromBody] ShiftCreate shift)
     {
         try
         {
@@ -76,9 +76,9 @@ public class ShiftsController : ControllerBase
             
     }
     
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> DeleteShift([FromRoute] int id)
+    public async Task<ActionResult> DeleteShift([FromRoute] int id)
     {
         try
         {
