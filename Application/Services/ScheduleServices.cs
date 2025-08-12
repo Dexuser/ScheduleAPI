@@ -50,7 +50,20 @@ public class ScheduleServices
 
             throw new ValidationException("This Schedule doesn't exist."); 
         }
-        
+
+        if (await _repository.IsThisScheduledUsed(scheduleId))
+        {
+            _logger.LogInformation(
+                "The Admin {adminWhoRequested} failed to delete the schedule of ID {id}. " +
+                "(That schedule is being used by a shift)", 
+                adminWhoRequested,
+                scheduleId);
+            
+            throw new ValidationException("This Schedule is being used by a shift.");
+        }
+
+
+
         await _repository.DeleteScheduleAsync(scheduleId);
         
         _logger.LogInformation(

@@ -11,5 +11,7 @@ public interface IScheduleRepository
     Task<Schedule?> FindByIdAsync(int id);
     Task<bool> ExistsAsync(int id);
 
+    Task<bool> IsThisScheduledUsed(int id);
+
     Task<Schedule?> FindByStartTimeAndEndTime(TimeOnly startTime, TimeOnly endTime);
 }

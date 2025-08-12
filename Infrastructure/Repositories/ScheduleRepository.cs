@@ -70,4 +70,9 @@ public class ScheduleRepository : IScheduleRepository
                                       u.EndTime == endTime);
         return schedule;
     }
+
+    public async Task<bool> IsThisScheduledUsed(int id)
+    {
+        return  await _context.Shifts.AnyAsync(s => s.ScheduleId == id);
+    }
 }

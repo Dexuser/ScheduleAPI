@@ -56,6 +56,12 @@ public class ShiftServices
             _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift doesn't exist)", adminWhoRequested, id);
             throw new ValidationException("That Shift doesn't exist");
         }
+
+        if (await _shiftRepository.ThisShiftHaveAppointmentsSuscribed(id))
+        {
+            _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift has appointments)", adminWhoRequested, id);
+            throw new ValidationException("That Shift has appointments");
+        }
         
         await _shiftRepository.DeleteShiftAsync(id);
         _logger.LogInformation("The admin {adminWhoRequested}, deleted the shift of ID: {id}", adminWhoRequested, id);

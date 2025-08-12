@@ -67,4 +67,9 @@ public class ShiftRepository : IShiftRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<bool> ThisShiftHaveAppointmentsSuscribed(int id)
+    {
+        return await  _context.Shifts.AnyAsync(s => s.Id == id && s.Appointments.Count > 0);
+    }
 }
