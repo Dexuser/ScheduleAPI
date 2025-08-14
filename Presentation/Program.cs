@@ -7,20 +7,23 @@ using Infrastructure;
 using Infrastructure.Context;
 using Infrastructure.Repositories;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
-using Serilog.Filters;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
+
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSqlServer<ScheduleAppContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
-
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
@@ -43,18 +46,11 @@ builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
 builder.Services.AddScoped<AppointmentServices>();
 builder.Services.AddScoped<AppointmentValidator>();
 
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
-//I'm going to use Serilog as my logger. Also, I'm only going to log anything related to my classes or my code. 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .Filter.ByExcluding(Matching.FromSource("Microsoft"))
-    .Filter.ByExcluding(Matching.FromSource("System"))
-    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
-
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog();
+// My SingletonLogger
+builder.Logging.AddConsole(); // consola sigue activa
+builder.Logging.AddProvider(new SingletonLoggerProvider()); // nuestro logger singleton a archivo
 
 // This Adds the JSON to ENUM value parser.
 builder.Services.AddControllers()

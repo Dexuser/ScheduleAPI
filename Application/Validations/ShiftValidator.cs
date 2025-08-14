@@ -9,13 +9,16 @@ public class ShiftValidator
 {
     private readonly IEnabledDateRepository _enabledDateRepository;
     private readonly IScheduleRepository _scheduleRepository;
+    private readonly IShiftRepository _shiftRepository;
     private readonly ILogger<ShiftValidator> _logger;
     
-    public ShiftValidator(IEnabledDateRepository enabledDateRepository, ILogger<ShiftValidator> logger, IScheduleRepository scheduleRepository)
+    public ShiftValidator(IEnabledDateRepository enabledDateRepository, ILogger<ShiftValidator> logger,
+        IScheduleRepository scheduleRepository, IShiftRepository shiftRepository)
     {
         _enabledDateRepository = enabledDateRepository;
         _logger = logger;
         _scheduleRepository = scheduleRepository;
+        _shiftRepository = shiftRepository;
     }
 
     public async Task ValidateAsync(string adminWhoRequested, ShiftCreate shift)
@@ -73,6 +76,21 @@ public class ShiftValidator
                 adminWhoRequested);
             
             throw new ValidationException("You cannot put a shift in this Day");
+        }
+    }
+
+    public async Task ValidateDeleteAsync(string adminWhoRequested, int id)
+    {
+        if (!await _shiftRepository.ThatShiftExists(id))
+        {
+            _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift doesn't exist)", adminWhoRequested, id);
+            throw new ValidationException("That Shift doesn't exist");
+        }
+
+        if (await _shiftRepository.ThisShiftHaveAppointmentsSuscribed(id))
+        {
+            _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift has appointments)", adminWhoRequested, id);
+            throw new ValidationException("That Shift has appointments");
         }
     }
 }

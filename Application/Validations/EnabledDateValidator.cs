@@ -48,6 +48,20 @@ public class EnabledDateValidator
 
             throw new ValidationException("That Date range already exists");
         }
-        
+    }
+    
+    public async Task ValidateDeleteAsync(string adminWhoRequested, int id)
+    {
+        var enabledDate = await _enabledDateRepository.GetEnabledDateByIdAsync(id);
+        if (enabledDate == null)
+        {
+            _logger.LogInformation(
+                "The Admin {adminWhoRequested} failed to delete the enabled date range of ID {id}." +
+                "(That range doesn't exist)", 
+                adminWhoRequested,
+                id);
+
+            throw new ValidationException("This date range doesn't exist."); 
+        }
     }
 }

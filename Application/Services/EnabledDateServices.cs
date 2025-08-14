@@ -27,18 +27,7 @@ public class EnabledDateServices
 
     public async Task DeleteEnabledDateAsync(string adminWhoRequested, int id)
     {
-        var enabledDate = await _enabledDateRepository.GetEnabledDateByIdAsync(id);
-        if (enabledDate == null)
-        {
-            _logger.LogInformation(
-                "The Admin {adminWhoRequested} failed to delete the enabled date range of ID {id}." +
-                "(That range doesn't exist)", 
-                adminWhoRequested,
-                id);
-
-            throw new ValidationException("This date range doesn't exist."); 
-        }
-        
+        await _enabledDateValidator.ValidateDeleteAsync(adminWhoRequested, id);
         await _enabledDateRepository.DeleteEnabledDateAsync(id);
         _logger.LogInformation("The admin {adminWhoRequested} deleted the enabled date range with ID {id}", adminWhoRequested, id);
     }
