@@ -43,6 +43,7 @@ builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
 builder.Services.AddScoped<AppointmentServices>();
 builder.Services.AddScoped<AppointmentValidator>();
 
+builder.Services.AddScoped<Application.Services.IEmailSender, EmailSender>();
 
 //I'm going to use Serilog as my logger. Also, I'm only going to log anything related to my classes or my code. 
 Log.Logger = new LoggerConfiguration()

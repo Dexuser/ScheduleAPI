@@ -12,11 +12,11 @@ public interface IShiftRepository
      */
     Task<IEnumerable<Shift>> GetAvailableShiftsSinceTodayAsync();
     Task<IEnumerable<Shift>> GetShiftsWithThisUserAsync(int userId);
-    Task<bool> ThatShiftExists(int id);
-
-    Task<bool> ThisShiftHaveAppointmentsSuscribed(int id);
-
-    Task<bool> ThatShiftStillAcceptsAppointments(int shiftId);
     Task CreateShiftAsync(Shift shift);
     Task DeleteShiftAsync(int id);
+
+    Task<bool> ThatShiftExists(int id);
+    Task<bool> ThisShiftHaveAppointmentsSuscribed(int id);
+    Task<bool> ThatShiftStillAcceptsAppointments(int shiftId);
+    Task<Shift?> GetShiftByIdAsync(int id);
 }
