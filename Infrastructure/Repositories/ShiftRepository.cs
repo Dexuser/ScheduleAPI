@@ -72,4 +72,9 @@ public class ShiftRepository : IShiftRepository
     {
         return await  _context.Shifts.AnyAsync(s => s.Id == id && s.Appointments.Count > 0);
     }
+
+    public async Task<Shift?> GetShiftByIdAsync(int id)
+    {
+        return await _context.Shifts.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
+    }
 }
