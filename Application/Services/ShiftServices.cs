@@ -4,6 +4,7 @@ using Application.Mappers;
 using Application.Validations;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using ProyectoFinal.Models;
 
 namespace Application.Services;
 
@@ -20,9 +21,12 @@ public class ShiftServices
         _logger = logger;
     }
     
-    public async Task<IEnumerable<ShiftDto>> GetAvailableShiftsSinceTodayAsync()
+    public async Task<IEnumerable<ShiftDto>> GetAvailableShiftsSinceTodayAsync(int userId)
     {
-        return ShiftMapper.ToDto(await _shiftRepository.GetAvailableShiftsSinceTodayAsync());
+        // Remove all the shifts that have an appointment with this user
+        var shifts = new List<Shift>( await _shiftRepository.GetAvailableShiftsSinceTodayAsync());
+        shifts.RemoveAll(s => s.Appointments.Any(a => a.UserId == userId));
+        return ShiftMapper.ToDto(shifts);
     }
 
     public async Task<IEnumerable<ShiftDto>> GetShiftsWithThisUserAsync(int userId)
@@ -32,8 +36,6 @@ public class ShiftServices
 
     public async Task CreateShiftAsync(string adminWhoRequested, ShiftCreate shift)
     {
-        // validar que no se cree en el pasado
-        // validar que se cree en un rango de fechas habilitada.
         await _shiftValidator.ValidateAsync(adminWhoRequested, shift);
         await _shiftRepository.CreateShiftAsync(ShiftMapper.ToEntity(shift));
         
@@ -51,18 +53,7 @@ public class ShiftServices
 
     public async Task DeleteShiftAsync(string adminWhoRequested, int id)
     {
-        if (!await _shiftRepository.ThatShiftExists(id))
-        {
-            _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift doesn't exist)", adminWhoRequested, id);
-            throw new ValidationException("That Shift doesn't exist");
-        }
-
-        if (await _shiftRepository.ThisShiftHaveAppointmentsSuscribed(id))
-        {
-            _logger.LogError("The admin {adminWhoRequested}, failed to delete the shift of ID: {id} (That Shift has appointments)", adminWhoRequested, id);
-            throw new ValidationException("That Shift has appointments");
-        }
-        
+        await _shiftValidator.ValidateDeleteAsync(adminWhoRequested, id);      
         await _shiftRepository.DeleteShiftAsync(id);
         _logger.LogInformation("The admin {adminWhoRequested}, deleted the shift of ID: {id}", adminWhoRequested, id);
     }

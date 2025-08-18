@@ -28,9 +28,10 @@ public class ShiftsController : ControllerBase
     {
         var user = GetWhoMadeTheRequest();
         var role = User.FindFirstValue(ClaimTypes.Role);
-        _logger.LogInformation("the {role} {user} is requesting all the shifts available", role, user);
+        var userid = Int32.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub));
         
-        var shifts = await _shiftServices.GetAvailableShiftsSinceTodayAsync();
+        _logger.LogInformation("the {role} {user} is requesting all the shifts available", role, user);
+        var shifts = await _shiftServices.GetAvailableShiftsSinceTodayAsync(userid);
         if (shifts.Count() == 0)
         {
             return NotFound();
