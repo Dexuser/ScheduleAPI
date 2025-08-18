@@ -54,8 +54,8 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog();
+//builder.Logging.ClearProviders();
+//builder.Logging.AddSerilog();
 
 // This Adds the JSON to ENUM value parser.
 builder.Services.AddControllers()

@@ -7,7 +7,7 @@ namespace Infrastructure;
 // This code does that. You only need to register this class to the builder.Services
 public class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {
-    private const string Format = "dd-MM-yyyy"; // El formato esperado del string JSON
+    private const string Format = "yyyy-MM-dd"; // El formato esperado del string JSON
 
     //  Método para leer un DateOnly desde un string en JSON
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

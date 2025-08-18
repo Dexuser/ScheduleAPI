@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Citas</title>
+    <link rel="stylesheet" href="Citas.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">Citas</div>
+        
+        <!-- Turnos del usuario -->
+        <div class="section">
+            <div class="section-title">Turnos a los que tienes una cita</div>
+            <table id="citasTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estaciones</th>
+                        <th>Duración de las citas (min)</th>
+                        <th>Horario</th>
+                        <th>Cancelar</th>
+                    </tr>
+                </thead>
+                <tbody id="citasTableBody">
+                    <!-- Se llena con fetch a /appointments -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Turnos disponibles -->
+        <div class="section">
+            <div class="section-title">Agendar una cita</div>
+            <table id="agendarTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estaciones</th>
+                        <th>Citas agendadas al momento</th>
+                        <th>Duración de las citas (min)</th>
+                        <th>Horario</th>
+                        <th>Agendar</th>
+                    </tr>
+                </thead>
+                <tbody id="agendarTableBody">
+                    <!-- Se llena con fetch a /shifts -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="add-appointment" onclick="mostrarModalNuevaCita()">
+            + Crear Nueva Disponibilidad
+        </div>
+    </div>
+
+    <!-- Modal nueva cita -->
+    <div id="modalNuevaCita" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <h2>Crear Nueva Disponibilidad</h2>
+            <form id="formNuevaCita">
+                <div class="form-group">
+                    <label>Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Número de Estaciones:</label>
+                    <input type="number" id="estaciones" min="1" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Duración por cita (minutos):</label>
+                    <input type="number" id="duracion" min="5" max="60" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora de inicio:</label>
+                    <input type="time" id="horaInicio" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora de fin:</label>
+                    <input type="time" id="horaFin" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-agendar">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="citas.js"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    background-color: #8fbc8f;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    background-color: #3b5e3b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center; 
+    margin: 15px 0;     
+}
+
+.form-section {
+    background-color: #8fbc8f;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group label {
+    color: #2a432a;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group input {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    background: white;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3b5e3b;
+}
+
+/* ✅ Botón Agregar sencillo */
+.form-btn {
+    background-color: #477b49; /* Verde */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.form-btn:hover {
+    background-color: #3c6f3e; /* Verde más oscuro */
+}
+
+/* ✅ Botón secundario (Cancelar/Editar) */
+.form-btn.secondary {
+    background-color: #ccc;
+    color: #333;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+.form-btn.secondary:hover {
+    background-color: #aaa;
+}
+
+.table-container {
+    margin: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th {
+    background-color: #8fbc8f;
+    color: #2d4a2d;
+    padding: 15px;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 2px solid #7ba07b;
+}
+
+td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+tr:hover {
+    background-color: #f0f8f0;
+}
+
+/* ✅ Botón Eliminar */
+.delete-btn {
+    background-color: #e53935; /* Rojo */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #c62828; /* Rojo más oscuro */
+}
+
+.footer {
+    background-color: #8fbc8f;
+    height: 60px;
+}
+
+.alert {
+    margin: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+}
+
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 600px) {
+    .form-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-group {
+        justify-content: space-between;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 10px 5px;
+    }
+}

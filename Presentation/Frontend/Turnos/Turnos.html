@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Turnos</title>
+    <link rel="stylesheet" href="Turnos.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">Turnos</div>
+        
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" name="fecha">
+                </div>
+                
+                <div class="form-group">
+                    <label for="duracion">Duración de las citas</label>
+                    <input type="number" id="duracion" name="duracion" min="1" max="480" placeholder="min">
+                </div>
+                
+                <div class="form-group">
+                    <label for="estaciones">Cant. estaciones</label>
+                    <input type="number" id="estaciones" name="estaciones" min="1" max="20" placeholder="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="horario">Horario</label>
+                    <select id="horario" name="horario">
+                        <option value="miercoles-07:00:00-22:00:00">miércoles 07:00:00 - 22:00:00</option>
+                        <option value="lunes-08:00:00-20:00:00">lunes 08:00:00 - 20:00:00</option>
+                        <option value="martes-09:00:00-18:00:00">martes 09:00:00 - 18:00:00</option>
+                        <option value="jueves-07:30:00-21:30:00">jueves 07:30:00 - 21:30:00</option>
+                        <option value="viernes-08:30:00-19:30:00">viernes 08:30:00 - 19:30:00</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="add-btn" onclick="agregarTurno()">+</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="turnos-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>fecha</th>
+                        <th>estaciones</th>
+                        <th>duración de las citas (min)</th>
+                        <th>horario</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="turnosTableBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer"></div>
+    </div>
+
+    <script src="Turnos.js"></script>
+</body>
+</html>
