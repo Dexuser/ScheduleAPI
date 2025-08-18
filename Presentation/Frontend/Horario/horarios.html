@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Horarios</title>
+    <link rel="stylesheet" href="horarios.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header"></div>
+        
+        <h1 class="title">Horarios</h1>
+
+        <!-- Alerta dinámica -->
+        <div class="alert" id="alert"></div>
+
+        <!-- Formulario -->
+        <div class="form-section">
+            <div class="form-group">
+                <label for="horaInicio">Selecciona la hora de inicio</label>
+                <input type="time" id="horaInicio">
+            </div>
+            
+            <div class="form-group">
+                <label for="horaFin">Selecciona la hora de finalización</label>
+                <input type="time" id="horaFin">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="descripcion">Descripción</label>
+                <input type="text" id="descripcion" class="description-input" placeholder="Ingresa una descripción para este horario">
+            </div>
+
+            <div class="form-buttons">
+                <button class="form-btn" onclick="agregarHorario()">Agregar</button>
+                <button class="form-btn secondary" onclick="cancelarEdicion()" id="cancelarBtn" style="display: none;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hora inicio</th>
+                        <th>Hora fin</th>
+                        <th>Descripción</th>
+                        <th>Eliminar</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaHorarios">
+                    <!-- Filas generadas dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer"></div>
+    </div>
+
+    <script src="horarios.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <style>
+    body {
+      background-color: #a3d3a1;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #c8e6c9;
+      padding: 40px;
+      border: 3px solid #d9eadd;
+      border-radius: 10px;
+      text-align: center;
+      width: 350px;
+      box-shadow: 0px 0px 10px #888888;
+      position: relative;
+    }
+
+    .login-container h2 {
+      color: white;
+      font-weight: bold;
+    }
+
+    .input-group {
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      background-color: #8fbc8f;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .input-group input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    .login-container button {
+      background-color: #3b5e3b;
+      color: white;
+      font-size: 20px;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .login-container button:disabled {
+      background-color: #2a412a;
+      cursor: not-allowed;
+    }
+
+    .bottom-text {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .bottom-text button {
+      margin-left: 10px;
+      padding: 5px 15px;
+      background-color: #d6eacb;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Contenedor de popups */
+    #popup-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>MEMBER LOGIN</h2>
+
+    <div class="input-group">
+      <input type="text" id="username" placeholder="Username" required>
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Password" required>
+    </div>
+
+    <button id="loginBtn">Login</button>
+
+    <div class="bottom-text">
+      Don't have an account?
+      <button onclick="goToRegister()">REGISTER HERE</button>
+    </div>
+  </div>
+
+  <!-- Contenedor para popups -->
+  <div id="popup-container"></div>
+
+  <script src="login.js"></script>
+</body>
+</html>

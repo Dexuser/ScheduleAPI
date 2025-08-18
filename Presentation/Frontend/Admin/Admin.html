@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="Admin.css">
+</head>
+<body>
+    <div class="container">
+        <div class="admin-header">
+            <h1>Admin</h1>
+        </div>
+    
+        <h2 class="section-title">Acciones</h2>
+        
+        <div class="actions-container">
+            <div class="action-card" onclick="navegarA('agregar-horario')">
+                <h3>Agregar horario</h3>
+                <p>Configura los horarios disponibles para citas</p>
+            </div>
+            
+            <div class="action-card" onclick="navegarA('habilitar-fechas')">
+                <h3>Habilitar fechas</h3>
+                <p>Gestiona la disponibilidad del calendario</p>
+            </div>
+            
+            <div class="action-card featured" onclick="navegarA('agregar-turnos')">
+                <h3>Agregar turnos</h3>
+                <p>Administra los turnos y horarios de trabajo</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-indicator" id="statusIndicator">
+        Sistema funcionando correctamente 
+    </div>
+
+    <script src="Admin.js"></script>
+</body>
+</html>
