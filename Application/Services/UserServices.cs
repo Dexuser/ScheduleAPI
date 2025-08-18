@@ -16,7 +16,11 @@ public class UserServices
     private readonly ILogger<UserServices> _logger;
     private readonly UserValidator _userValidator;
 
-    public UserServices(IUserRepository repository, ITokenProvider tokenProvider, ILogger<UserServices> logger, UserValidator userValidator)
+    public UserServices(
+        IUserRepository repository,
+        ITokenProvider tokenProvider,
+        ILogger<UserServices> logger,
+        UserValidator userValidator)
     {
         _repository = repository;
         _tokenProvider = tokenProvider;
@@ -61,7 +65,8 @@ public class UserServices
         }
 
         _logger.LogWarning(
-            "The user {UserName} tried to log in to the system but failed (incorrect password)",
+            "The user {UserName} tried to log in to the system but failed " +
+            "(incorrect password)",
             credentials.UserName);
         throw new ValidationException("Incorrect password"); // otherwise
     }
