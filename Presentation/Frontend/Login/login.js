@@ -122,4 +122,5 @@ async function login() {
 }
 
 document.getElementById('loginBtn')?.addEventListener('click', login);
-function goToRegister() { window.location.href = 'register.html'; }
+function goToRegister() { window.location.href = '../Registro/register.html'; }
+ 
