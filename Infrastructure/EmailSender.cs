@@ -16,29 +16,31 @@ public class EmailSender : IEmailSender
 
     public async Task SendEmailAsync(string to, string subject, string body)
     {
-        var host = _config["Smtp:Host"];
-        var port = int.Parse(_config["Smtp:Port"]);
-        var enableSsl = bool.Parse(_config["Smtp:EnableSsl"]);
-        var user = _config["Smtp:User"];
-        var password = _config["Smtp:Password"];
+        Console.WriteLine($"Sending email to: {to}");
 
-        using var client = new SmtpClient(host, port)
-        {
-            Credentials = new NetworkCredential(user, password),
-            EnableSsl = enableSsl
-        };
+        //var host = _config["Smtp:Host"];
+        //var port = int.Parse(_config["Smtp:Port"]);
+        //var enableSsl = bool.Parse(_config["Smtp:EnableSsl"]);
+        //var user = _config["Smtp:User"];
+        //var password = _config["Smtp:Password"];
 
-        var mail = new MailMessage
-        {
-            From = new MailAddress(user),
-            Subject = subject,
-            Body = body,
-            IsBodyHtml = true
-        };
+        //using var client = new SmtpClient(host, port)
+        //{
+        //    Credentials = new NetworkCredential(user, password),
+        //    EnableSsl = enableSsl
+        //};
 
-        mail.To.Add(to);
+        //var mail = new MailMessage
+        //{
+        //    From = new MailAddress(user),
+        //    Subject = subject,
+        //    Body = body,
+        //    IsBodyHtml = true
+        //};
 
-        // Enviar de forma asíncrona
-        await client.SendMailAsync(mail);
+        //mail.To.Add(to);
+
+        //// Enviar de forma asíncrona
+        //await client.SendMailAsync(mail);
     }
 }

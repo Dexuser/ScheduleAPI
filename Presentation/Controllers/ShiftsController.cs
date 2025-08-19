@@ -41,7 +41,7 @@ public class ShiftsController : ControllerBase
     }
     
     [HttpGet]
-    [Route("OfUser")]
+    [Route("WithThisUser")]
     [Authorize(Roles = "USER")]
     public async Task<ActionResult<IEnumerable<ShiftDto>>> GetShiftsWithThisUserAsync()
     {

@@ -1,126 +1,237 @@
-const API_URL = "http://localhost:5148/Appointments";
-function cancelarCita(id) {
-    if (confirm('¿Está seguro de que desea cancelar esta cita?')) {
-        citasData = citasData.filter(cita => cita.id !== id);
-        actualizarTablaCitas();
+// ======================
+// Utilidades
+// ======================
 
-        const disponibilidad = disponibilidadesData.find(d => d.id === id);
-        if (disponibilidad && disponibilidad.citasAgendadas > 0) {
-            disponibilidad.citasAgendadas--;
+class PopupManager {
+    constructor() {
+        this.queue = [];
+        this.isShowing = false;
+        this.container = document.getElementById("popup-container");
+    }
+
+    show(message, type = "info", duration = 3000) {
+        this.queue.push({ message, type, duration });
+        if (!this.isShowing) this._displayNext();
+    }
+
+    _displayNext() {
+        if (!this.queue.length) {
+            this.isShowing = false;
+            return;
         }
-        actualizarTablaDisponibilidades();
+
+        this.isShowing = true;
+        const { message, type, duration } = this.queue.shift();
+
+        const popup = document.createElement("div");
+        popup.textContent = message;
+        popup.setAttribute("role", "alert");
+        Object.assign(popup.style, {
+            backgroundColor: this._getColor(type),
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            fontWeight: "bold",
+            minWidth: "200px",
+            textAlign: "center",
+            marginBottom: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.6)",
+            opacity: "0",
+            transition: "opacity 0.4s ease"
+        });
+
+        this.container.appendChild(popup);
+        requestAnimationFrame(() => (popup.style.opacity = "1"));
+
+        setTimeout(() => {
+            popup.style.opacity = "0";
+            setTimeout(() => {
+                this.container.removeChild(popup);
+                this._displayNext();
+            }, 400);
+        }, duration);
+    }
+
+    _getColor(type) {
+        return {
+            success: "#4caf50",
+            error: "#f44336",
+            warning: "#ff9800",
+            info: "#2196f3"
+        }[type] || "#333";
     }
 }
 
-function agendarCita(id) {
-    const disponibilidad = disponibilidadesData.find(d => d.id === id);
-    if (disponibilidad && disponibilidad.citasAgendadas < disponibilidad.estaciones) {
-        const nuevaCita = {
-            id: Date.now(),
-            fecha: disponibilidad.fecha,
-            estaciones: disponibilidad.estaciones,
-            duracion: disponibilidad.duracion,
-            horario: disponibilidad.horario,
-            agendada: true
-        };
-        citasData.push(nuevaCita);
-        disponibilidad.citasAgendadas++;
-        actualizarTablaCitas();
-        actualizarTablaDisponibilidades();
-        alert('Cita agendada exitosamente');
-    } else {
-        alert('No hay cupos disponibles para esta fecha');
+const popupManager = new PopupManager();
+const showPopup = (type, message, duration = 3000) =>
+    popupManager.show(message, type, duration);
+
+async function fetchWithPopup(url, options = {}, loadingMessage = null) {
+    try {
+        if (loadingMessage) showPopup("info", loadingMessage, 1000);
+        const response = await fetch(url, options);
+        let data = null;
+        try {
+            data = await response.json();
+        } catch { }
+        if (response.ok) return data;
+        const errorMsg = data?.message || "Error inesperado";
+        showPopup("error", errorMsg);
+        throw new Error(errorMsg);
+    } catch (error) {
+        showPopup("error", error.message || "Error de conexión");
+        throw error;
     }
 }
 
-function mostrarModalNuevaCita() {
-    document.getElementById('modalNuevaCita').style.display = 'block';
+// ======================
+// Funciones de Citas
+// ======================
+
+// Cargar citas del usuario
+async function loadMyAppointments() {
+    const table = document.getElementById("citasTableBody");
+    if (!table) return;
+
+    table.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
+
+    try {
+        const data = await fetchWithPopup("http://localhost:5148/Shifts/WithThisUser", {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        table.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            table.innerHTML =
+                "<tr><td colspan='4'>No tienes citas agendadas</td></tr>";
+            return;
+        }
+
+        data.forEach(turno => {
+            turno.slots
+                .filter(slot => slot.isTaken)
+                .forEach(slot => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+            <td>${turno.date}</td>
+            <td>${slot.startTime}</td>
+            <td>${slot.endTime}</td>
+            <td>
+              <button class="btn btn-cancelar" onclick="cancelAppointment(${slot.id})">Cancelar</button>
+            </td>
+          `;
+                    table.appendChild(row);
+                });
+        });
+    } catch (err) {
+        console.error("Error cargando citas:", err);
+        table.innerHTML = "<tr><td colspan='4'>Error cargando citas</td></tr>";
+    }
 }
 
-function cerrarModal() {
-    document.getElementById('modalNuevaCita').style.display = 'none';
-    document.getElementById('formNuevaCita').reset();
+// Cargar turnos disponibles
+async function loadAvailableShifts() {
+    const table = document.getElementById("agendarTableBody");
+    if (!table) return;
+
+    table.innerHTML = "<tr><td colspan='6'>Cargando...</td></tr>";
+
+    try {
+        const data = await fetchWithPopup("http://localhost:5148/Shifts/WithOutThisUser", {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        table.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            table.innerHTML =
+                "<tr><td colspan='6'>No hay turnos disponibles</td></tr>";
+            return;
+        }
+
+        data.forEach(turno => {
+            turno.slots
+                .filter(slot => !slot.isTaken)
+                .forEach(slot => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+            <td>${turno.id}</td>
+            <td>${turno.date}</td>
+            <td>${turno.schedule.description}</td>
+            <td>${turno.meetingDurationOnMinutes} min</td>
+            <td>${slot.startTime} - ${slot.endTime}</td>
+            <td>
+              <button class="btn btn-agendar" onclick="bookShift(${slot.id})">Agendar</button>
+            </td>
+          `;
+                    table.appendChild(row);
+                });
+        });
+    } catch (err) {
+        console.error("Error cargando turnos:", err);
+        table.innerHTML = "<tr><td colspan='6'>Error cargando turnos</td></tr>";
+    }
 }
 
-function formatearHorario(fecha, horaInicio, horaFin) {
-    const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    const fechaObj = new Date(fecha + 'T00:00:00');
-    const diaSemana = diasSemana[fechaObj.getDay()];
-    return `${diaSemana} ${horaInicio}:00 - ${horaFin}:00`;
-}
-
-function actualizarTablaCitas() {
-    const tbody = document.getElementById('citasTableBody');
-    tbody.innerHTML = '';
-    citasData.forEach(cita => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${cita.id}</td>
-            <td>${cita.fecha}</td>
-            <td>${cita.estaciones}</td>
-            <td>${cita.duracion}</td>
-            <td><div class="horario-text">${cita.horario}</div></td>
-            <td><button class="btn btn-cancelar" onclick="cancelarCita(${cita.id})">CANCELAR</button></td>
-        `;
-    });
-}
-
-function actualizarTablaDisponibilidades() {
-    const tbody = document.getElementById('agendarTableBody');
-    tbody.innerHTML = '';
-    disponibilidadesData.forEach(disp => {
-        const puedeAgendar = disp.citasAgendadas < disp.estaciones;
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${disp.id}</td>
-            <td>${disp.fecha}</td>
-            <td>${disp.estaciones}</td>
-            <td>${disp.citasAgendadas}</td>
-            <td>${disp.duracion}</td>
-            <td><div class="horario-text">${disp.horario}</div></td>
-            <td><button class="btn btn-agendar" onclick="agendarCita(${disp.id})" ${!puedeAgendar ? 'disabled' : ''}>Agendar</button></td>
-        `;
-    });
-}
-
-document.getElementById('formNuevaCita').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const fecha = document.getElementById('fecha').value;
-    const estaciones = parseInt(document.getElementById('estaciones').value);
-    const duracion = parseInt(document.getElementById('duracion').value);
-    const horaInicio = document.getElementById('horaInicio').value;
-    const horaFin = document.getElementById('horaFin').value;
-
-    if (horaInicio >= horaFin) {
-        alert('La hora de inicio debe ser menor que la hora de fin');
+// Agendar cita
+async function bookShift(slotId) {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (!userData) {
+        showPopup("error", "Debes iniciar sesión primero");
         return;
     }
 
-    const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES');
-    const horarioFormateado = formatearHorario(fecha, horaInicio, horaFin);
+    try {
+        await fetchWithPopup(
+            "http://localhost:5148/Appointments",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ userid: userData.sub, slotid: slotId })
+            },
+            "Agendando cita..."
+        );
 
-    const nuevaDisponibilidad = {
-        id: disponibilidadesData.length + 1,
-        fecha: fechaFormateada,
-        estaciones: estaciones,
-        citasAgendadas: 0,
-        duracion: duracion,
-        horario: horarioFormateado
-    };
-
-    disponibilidadesData.push(nuevaDisponibilidad);
-    actualizarTablaDisponibilidades();
-    cerrarModal();
-    alert('Nueva disponibilidad creada exitosamente');
-});
-
-window.onclick = function(event) {
-    const modal = document.getElementById('modalNuevaCita');
-    if (event.target == modal) {
-        cerrarModal();
+        showPopup("success", "Cita agendada con éxito");
+        loadMyAppointments();
+        loadAvailableShifts();
+    } catch (err) {
+        console.error("Error agendando cita:", err);
     }
-};
+}
 
-// Inicializar tablas
-actualizarTablaCitas();
-actualizarTablaDisponibilidades();
+// Cancelar cita
+async function cancelAppointment(slotId) {
+    try {
+        await fetchWithPopup(
+            "http://localhost:5148/Appointments",
+            {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ state: "CANCELED", slotid: slotId })
+            },
+            "Cancelando cita..."
+        );
+
+        showPopup("success", "Cita cancelada con éxito");
+        loadMyAppointments();
+        loadAvailableShifts();
+    } catch (err) {
+        console.error("Error cancelando cita:", err);
+    }
+}
+
+// ======================
+// Inicialización
+// ======================
+document.addEventListener("DOMContentLoaded", () => {
+    loadMyAppointments();
+    loadAvailableShifts();
+});
