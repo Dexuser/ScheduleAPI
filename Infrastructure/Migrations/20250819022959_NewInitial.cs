@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class NewInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -79,22 +79,44 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Slots",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StartTime = table.Column<TimeOnly>(type: "time(0)", nullable: false),
+                    EndTime = table.Column<TimeOnly>(type: "time(0)", nullable: false),
+                    ShiftId = table.Column<int>(type: "int", nullable: false),
+                    isTaken = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("Slot_Id_PK", x => x.Id);
+                    table.ForeignKey(
+                        name: "Slot_ShiftId_FK",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Appointments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    ShiftId = table.Column<int>(type: "int", nullable: false),
+                    SlotId = table.Column<int>(type: "int", nullable: false),
                     State = table.Column<string>(type: "varchar(100)", nullable: false, defaultValue: "ACTIVE")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("Appointment_Id_PK", x => x.Id);
                     table.ForeignKey(
-                        name: "Appointment_ShiftId_FK",
-                        column: x => x.ShiftId,
-                        principalTable: "Shifts",
+                        name: "Appointment_SlotId_FK",
+                        column: x => x.SlotId,
+                        principalTable: "Slots",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -105,10 +127,16 @@ namespace Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "Password", "Role", "UserName" },
+                values: new object[] { 1, "test@gmail.com", "$2a$11$isXTfmHGobkbBdrnlICaMO1DXjxTtaWahqOgKsBDLejKWotlWiTF2", "ADMIN", "admin" });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Appointments_ShiftId",
+                name: "IX_Appointments_SlotId",
                 table: "Appointments",
-                column: "ShiftId");
+                column: "SlotId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_UserId",
@@ -119,6 +147,17 @@ namespace Infrastructure.Migrations
                 name: "IX_Shifts_ScheduleId",
                 table: "Shifts",
                 column: "ScheduleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Slots_ShiftId",
+                table: "Slots",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_UserName",
@@ -137,10 +176,13 @@ namespace Infrastructure.Migrations
                 name: "EnabledDates");
 
             migrationBuilder.DropTable(
-                name: "Shifts");
+                name: "Slots");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Shifts");
 
             migrationBuilder.DropTable(
                 name: "Schedules");

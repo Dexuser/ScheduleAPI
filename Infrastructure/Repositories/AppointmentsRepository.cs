@@ -19,14 +19,18 @@ public class AppointmentsRepository : IAppointmentsRepository
     public async Task<bool> CreateAppointmentAsync(Appointment appointment)
     {
         using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
-
-        var aux = await _context.Shifts.Include(s => s.Appointments)
-            .Where(s => s.Id == appointment.ShiftId).FirstAsync();
-
-        if (aux.Appointments.Count() < aux.ServicesSlots)
+        
+        // Retorna el shift que contenga ese Slot
+        var shift = await _context.Shifts.Include(shift => shift.Slots)
+            .FirstOrDefaultAsync(s => s.Slots.Any( slot => slot.Id == appointment.SlotId));
+        
+        if (shift.Slots.Count(s => s.isTaken) < shift.ServicesSlots)
         {
             await _context.Appointments.AddAsync(appointment);
             await _context.SaveChangesAsync();
+            await _context.Slots.Where(s => s.Id == appointment.SlotId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(s => s.isTaken, true));
+            
             await transaction.CommitAsync();
             return true;
         }
@@ -34,16 +38,17 @@ public class AppointmentsRepository : IAppointmentsRepository
         return false;
     }
 
-    public async Task<Appointment?> GetAppointmentByIdAndShiftIdAsync(int userId, int shiftId)
+    public async Task<Appointment?> GetThatAppointmentByIdAndSlotId(int userId, int slotId)
     {
-        var appointment =  await _context.Appointments.Where( a => a.UserId == userId && a.ShiftId == shiftId).FirstOrDefaultAsync();
+        var appointment =  await _context.Appointments.Where( a => a.UserId == userId && a.SlotId == slotId).FirstOrDefaultAsync();
         return appointment;
     }
 
 
-    public async Task UpdateStateAsync(int userId, int shiftId, AppointmentState state)
+
+    public async Task UpdateStateAsync(int userId, int slotId, AppointmentState state)
     {
-        var appointment = await this.GetAppointmentByIdAndShiftIdAsync(userId, shiftId);
+        var appointment = await this.GetThatAppointmentByIdAndSlotId(userId, slotId);
         if (appointment != null)
         {
             appointment.State = state;
@@ -51,18 +56,16 @@ public class AppointmentsRepository : IAppointmentsRepository
         }
     }
 
-    public bool UserHaveAnotherAppointmentsOnThatDay(int userId, int shiftId)
+    public bool UserHaveAnotherAppointmentsOnThatDay(int userId, int slotId)
     {
-        var date = _context.Shifts
-            .Where(s => s.Id == shiftId)
-            .Select(s => s.Date)
+        var shiftDate = _context.Slots
+            .Where(s => s.Id == slotId)
+            .Select(s => s.Shift.Date)
             .FirstOrDefault();
 
-        if (date == default)
-            return false;
-
-        return _context.Appointments
-            .Any(a => a.UserId == userId && a.Shift.Date == date);
+        return  _context.Appointments
+            .Any(a => a.UserId == userId && a.Slot.Shift.Date == shiftDate);
+  
     }
 }
 

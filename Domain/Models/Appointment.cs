@@ -10,11 +10,15 @@ public class Appointment
 
     public int UserId { get; set; }
 
-    public int ShiftId { get; set; }
+   
+    public int SlotId { get; set; }
     
     public AppointmentState State { get; set; }
 
     // navigation properties
     public User User { get; set; }
-    public Shift Shift { get; set; }
+    
+    public Slot Slot { get; set; }
+    
+    
 }

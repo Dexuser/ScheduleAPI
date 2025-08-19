@@ -4,6 +4,11 @@ const API_URL = "http://localhost:5148/EnabledDates";
 const tablaFechas = document.getElementById("tablaFechas");
 const alertBox = document.getElementById("alert");
 
+// Obtener token desde localStorage
+function getToken() {
+    return localStorage.getItem("token");
+}
+
 // Mostrar alertas
 function mostrarAlerta(mensaje, tipo = "success") {
     alertBox.textContent = mensaje;
@@ -17,7 +22,12 @@ function mostrarAlerta(mensaje, tipo = "success") {
 // Cargar las fechas desde la API
 async function cargarFechas() {
     try {
-        const resp = await fetch(API_URL);
+        const resp = await fetch(API_URL, {
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
+        });
+
         if (!resp.ok) throw new Error("Error al cargar fechas");
 
         const data = await resp.json();
@@ -31,6 +41,10 @@ async function cargarFechas() {
 // Renderizar la tabla
 function renderTabla(fechas) {
     tablaFechas.innerHTML = "";
+    if (!fechas.length) {
+        tablaFechas.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay fechas registradas</td></tr>`;
+        return;
+    }
     fechas.forEach(fecha => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -61,7 +75,10 @@ async function agregarFecha() {
     try {
         const resp = await fetch(API_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`
+            },
             body: JSON.stringify(nuevaFecha)
         });
 
@@ -80,7 +97,13 @@ async function eliminarFecha(id) {
     if (!confirm("¿Seguro que deseas eliminar esta fecha?")) return;
 
     try {
-        const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        const resp = await fetch(`${API_URL}/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
+        });
+
         if (!resp.ok) throw new Error("Error al eliminar fecha");
 
         mostrarAlerta("Fecha eliminada correctamente");

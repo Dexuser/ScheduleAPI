@@ -1,9 +1,9 @@
-// fechas.js
+// horarios.js
 
-const API_URL = "http://localhost:5148/EnabledDates";
+const API_URL = "http://localhost:5148/Schedules";
 
 // ===================== ALERTAS =====================
-function mostrarAlerta(mensaje, tipo) {
+function mostrarAlerta(mensaje, tipo = "info") {
     const alert = document.getElementById("alert");
     alert.textContent = mensaje;
     alert.className = `alert ${tipo}`;
@@ -11,126 +11,146 @@ function mostrarAlerta(mensaje, tipo) {
     setTimeout(() => alert.style.display = "none", 3000);
 }
 
+// ===================== FETCH CON JWT =====================
+async function fetchJWT(url, options = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        mostrarAlerta("Token no encontrado. Inicia sesión.", "error");
+        throw new Error("Token no encontrado");
+    }
+
+    if (!options.headers) options.headers = {};
+    options.headers["Authorization"] = `Bearer ${token}`;
+    options.headers["Content-Type"] = "application/json";
+
+    try {
+        const response = await fetch(url, options);
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            const msg = data?.message || "Error inesperado";
+            mostrarAlerta(msg, "error");
+            throw new Error(msg);
+        }
+        return data;
+    } catch (e) {
+        mostrarAlerta("Error de conexión con el servidor", "error");
+        throw e;
+    }
+}
+
+// ===================== VARIABLES =====================
+let horarios = [];
+let editandoId = null;
+
 // ===================== RENDERIZAR TABLA =====================
-function renderTabla(fechas) {
-    const tbody = document.getElementById("tablaFechas");
+function renderTabla() {
+    const tbody = document.getElementById("tablaHorarios");
     tbody.innerHTML = "";
 
-    if (!fechas || fechas.length === 0) {
-        const fila = document.createElement("tr");
-        fila.innerHTML = `<td colspan="4" style="text-align:center;">No hay fechas registradas</td>`;
-        tbody.appendChild(fila);
+    if (!horarios || horarios.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay horarios registrados</td></tr>`;
         return;
     }
 
-    fechas.forEach(f => {
+    horarios.forEach(h => {
         const fila = document.createElement("tr");
         fila.innerHTML = `
-            <td>${f.id}</td>
-            <td>${f.startDate}</td>
-            <td>${f.endDate}</td>
-            <td><button onclick="eliminarFecha(${f.id})">🗑️</button></td>
+            <td>${h.id}</td>
+            <td>${h.startTime}</td>
+            <td>${h.endTime}</td>
+            <td>${h.description || ""}</td>
+            <td><button onclick="eliminarHorario(${h.id})">🗑️</button></td>
+            <td><button onclick="editarHorario(${h.id})">✏️</button></td>
         `;
         tbody.appendChild(fila);
     });
 }
 
-// ===================== CARGAR FECHAS =====================
-async function cargarFechas() {
-    const tbody = document.getElementById("tablaFechas");
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>`;
+// ===================== CARGAR HORARIOS =====================
+async function cargarHorarios() {
+    const tbody = document.getElementById("tablaHorarios");
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Cargando...</td></tr>`;
 
     try {
-        const resp = await fetch(API_URL, {
-            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-        });
-
-        if (resp.status === 404) {
-            renderTabla([]);
-            return;
-        }
-
-        if (!resp.ok) {
-            mostrarAlerta("No se pudieron obtener las fechas", "error");
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Error al cargar</td></tr>`;
-            return;
-        }
-
-        const fechas = await resp.json();
-        renderTabla(fechas);
-    } catch (e) {
-        mostrarAlerta("Error de conexión con el servidor", "error");
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Error de conexión</td></tr>`;
+        horarios = await fetchJWT(API_URL);
+        renderTabla();
+    } catch {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar</td></tr>`;
     }
 }
 
-// ===================== AGREGAR FECHA =====================
-async function agregarFecha() {
-    const fechaInicio = document.getElementById("fechaInicio").value;
-    const fechaFin = document.getElementById("fechaFin").value;
-
-    if (!fechaInicio || !fechaFin) {
-        mostrarAlerta("Debes seleccionar ambas fechas", "error");
-        return;
-    }
-
-    if (fechaFin < fechaInicio) {
-        mostrarAlerta("La fecha de fin debe ser mayor o igual que la de inicio", "error");
-        return;
-    }
-
-    const body = {
-        startDate: fechaInicio,
-        endDate: fechaFin
-    };
-
-    try {
-        const resp = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!resp.ok) {
-            const error = await resp.json();
-            mostrarAlerta(error.message || "Error al agregar fecha", "error");
-            return;
-        }
-
-        mostrarAlerta("Fecha agregada correctamente", "success");
-        await cargarFechas();
-    } catch (e) {
-        mostrarAlerta("Error de conexión con el servidor", "error");
-    }
+// ===================== LIMPIAR FORMULARIO =====================
+function limpiarFormulario() {
+    document.getElementById("horaInicio").value = "";
+    document.getElementById("horaFin").value = "";
+    document.getElementById("descripcion").value = "";
+    editandoId = null;
+    document.getElementById("cancelarBtn").style.display = "none";
 }
 
-// ===================== ELIMINAR =====================
-async function eliminarFecha(id) {
-    if (!confirm("¿Seguro que deseas eliminar esta fecha?")) return;
+// ===================== AGREGAR O EDITAR HORARIO =====================
+async function agregarHorario() {
+    const horaInicio = document.getElementById("horaInicio").value;
+    const horaFin = document.getElementById("horaFin").value;
+    const descripcion = document.getElementById("descripcion").value.trim();
+
+    if (!horaInicio || !horaFin) {
+        mostrarAlerta("Debes seleccionar ambas horas", "error");
+        return;
+    }
+
+    if (horaFin < horaInicio) {
+        mostrarAlerta("La hora de fin debe ser mayor o igual a la de inicio", "error");
+        return;
+    }
+
+    const body = { startTime: horaInicio, endTime: horaFin, description: descripcion };
 
     try {
-        const resp = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE",
-            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-        });
-
-        if (!resp.ok) {
-            const error = await resp.json();
-            mostrarAlerta(error.message || "Error al eliminar fecha", "error");
-            return;
+        if (editandoId) {
+            // EDITAR
+            await fetchJWT(`${API_URL}/${editandoId}`, { method: "PUT", body: JSON.stringify(body) });
+            mostrarAlerta("Horario actualizado correctamente", "success");
+        } else {
+            // AGREGAR
+            await fetchJWT(API_URL, { method: "POST", body: JSON.stringify(body) });
+            mostrarAlerta("Horario agregado correctamente", "success");
         }
+        limpiarFormulario();
+        await cargarHorarios();
+    } catch {}
+}
 
-        mostrarAlerta("Fecha eliminada correctamente", "success");
-        await cargarFechas();
-    } catch (e) {
-        mostrarAlerta("Error de conexión con el servidor", "error");
-    }
+// ===================== ELIMINAR HORARIO =====================
+async function eliminarHorario(id) {
+    if (!confirm("¿Seguro que deseas eliminar este horario?")) return;
+
+    try {
+        await fetchJWT(`${API_URL}/${id}`, { method: "DELETE" });
+        mostrarAlerta("Horario eliminado correctamente", "success");
+        await cargarHorarios();
+    } catch {}
+}
+
+// ===================== EDITAR HORARIO =====================
+function editarHorario(id) {
+    const horario = horarios.find(h => h.id === id);
+    if (!horario) return;
+
+    document.getElementById("horaInicio").value = horario.startTime;
+    document.getElementById("horaFin").value = horario.endTime;
+    document.getElementById("descripcion").value = horario.description || "";
+    editandoId = id;
+    document.getElementById("cancelarBtn").style.display = "inline-block";
+}
+
+// ===================== CANCELAR EDICIÓN =====================
+function cancelarEdicion() {
+    limpiarFormulario();
 }
 
 // ===================== INICIALIZAR =====================
 document.addEventListener("DOMContentLoaded", () => {
-    cargarFechas();
+    cargarHorarios();
 });

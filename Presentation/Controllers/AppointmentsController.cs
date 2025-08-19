@@ -57,7 +57,7 @@ public class AppointmentsController : ControllerBase
             var userName = GetWhoMadeTheRequest();
             _logger.LogInformation(
                 "The user {user} is requesting the update of the state of their appointment associated " +
-                "to the shift of ID {patch.ShiftId}", userName, patch.ShiftId);
+                "to the shift of ID {patch.ShiftId}", userName, patch.SlotId);
             
             await _appointmentServices.UpdateStateAsync(userName, userId, patch);
             return Ok();

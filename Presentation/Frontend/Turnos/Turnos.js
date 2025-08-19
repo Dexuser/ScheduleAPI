@@ -1,147 +1,145 @@
-const API_URL = "http://localhost:5148/Shifts";
+// Turnos.js
 
+const API_TURNOS = "http://localhost:5148/Shifts";
+const API_HORARIOS = "http://localhost:5148/Schedules";
+const tablaTurnos = document.getElementById("turnosTableBody");
+const selectHorario = document.getElementById("horario");
+
+// Obtener token desde localStorage
 function getToken() {
-    return localStorage.getItem("jwt");
+    return localStorage.getItem("token");
 }
 
-//Cargar todos los turnos tanto admin y user 
+// Mostrar alertas simples
+function mostrarAlerta(mensaje, tipo = "success") {
+    alert(mensaje); // ⚠️ Aquí puedes usar tu popupManager si quieres mantener consistencia
+}
+
+// Cargar horarios dinámicamente en el select
+async function cargarHorarios() {
+    try {
+        const token = getToken();
+        const resp = await fetch(API_HORARIOS, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!resp.ok) throw new Error("Error al cargar horarios");
+        const horarios = await resp.json();
+
+        selectHorario.innerHTML = "";
+        horarios.forEach(h => {
+            const option = document.createElement("option");
+            option.value = h.id;
+            option.textContent = `${h.description} (${h.startTime} - ${h.endTime})`;
+            selectHorario.appendChild(option);
+        });
+    } catch (error) {
+        mostrarAlerta("No se pudieron cargar los horarios", "error");
+        console.error(error);
+    }
+}
+
+// Cargar turnos en la tabla
 async function cargarTurnos() {
     try {
-        const response = await fetch(API_URL, {
-            headers: { "Authorization": `Bearer ${getToken()}` }
+        const token = getToken();
+        const resp = await fetch(API_TURNOS, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
         });
 
-        if (!response.ok) {
-            alert("Error al cargar turnos");
-            return;
-        }
-
-        const shifts = await response.json();
-        renderizarTurnos(shifts);
-    } catch (err) {
-        console.error(err);
-        alert("Error al conectar con el servidor");
+        if (!resp.ok) throw new Error("Error al cargar turnos");
+        const turnos = await resp.json();
+        renderTabla(turnos);
+    } catch (error) {
+        mostrarAlerta("No se pudieron cargar los turnos", "error");
+        console.error(error);
     }
 }
 
-//Cargar solo los turnos del usuario logueado
-async function cargarTurnosUsuario() {
-    try {
-        const response = await fetch(`${API_URL}/OfUser`, {
-            headers: { "Authorization": `Bearer ${getToken()}` }
-        });
-
-        if (!response.ok) {
-            alert("Error al cargar tus turnos");
-            return;
-        }
-
-        const shifts = await response.json();
-        renderizarTurnos(shifts);
-    } catch (err) {
-        console.error(err);
-        alert("Error al conectar con el servidor");
-    }
-}
-
-//Renderizar turnos en la tabla
-function renderizarTurnos(shifts) {
-    const tableBody = document.getElementById('turnosTableBody');
-    tableBody.innerHTML = "";
-
-    shifts.forEach(shift => {
-        const newRow = tableBody.insertRow();
-        newRow.innerHTML = `
-            <td>${shift.id}</td>
-            <td>${shift.date || 'N/A'}</td>
-            <td>${shift.stations || 'N/A'}</td>
-            <td>${shift.duration || 'N/A'}</td>
-            <td>${shift.schedule || 'N/A'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="action-btn delete-btn" onclick="eliminarTurno(${shift.id})" title="Eliminar">✖</button>
-                </div>
-            </td>
+// Renderizar tabla
+function renderTabla(turnos) {
+    tablaTurnos.innerHTML = "";
+    turnos.forEach(turno => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${turno.id}</td>
+            <td>${turno.date}</td>
+            <td>${turno.servicesSlots}</td>
+            <td>${turno.meetingDurationOnMinutes}</td>
+            <td>${turno.schedule.description} (${turno.schedule.startTime} - ${turno.schedule.endTime})</td>
+            <td><button onclick="eliminarTurno(${turno.id})">Eliminar</button></td>
         `;
+        tablaTurnos.appendChild(row);
     });
 }
 
-//Crear turno (ADMIN)
+// Agregar turno
 async function agregarTurno() {
-    const fecha = document.getElementById('fecha').value;
-    const duracion = document.getElementById('duracion').value;
-    const estaciones = document.getElementById('estaciones').value;
-    const horarioSelect = document.getElementById('horario');
-    const horarioTexto = horarioSelect.options[horarioSelect.selectedIndex].text;
+    const fecha = document.getElementById("fecha").value;
+    const duracion = document.getElementById("duracion").value;
+    const estaciones = document.getElementById("estaciones").value;
+    const horarioId = selectHorario.value;
 
-    if (!fecha || !duracion || !estaciones) {
-        alert("Todos los campos son obligatorios");
+    if (!fecha || !duracion || !estaciones || !horarioId) {
+        mostrarAlerta("Todos los campos son obligatorios", "error");
         return;
     }
 
-    const shiftData = {
+    const nuevoTurno = {
         date: fecha,
-        duration: parseInt(duracion),
-        stations: parseInt(estaciones),
-        schedule: horarioTexto
+        meetingDurationOnMinutes: parseInt(duracion),
+        servicesSlots: parseInt(estaciones),
+        scheduleId: parseInt(horarioId)
     };
 
     try {
-        const response = await fetch(API_URL, {
+        const token = getToken();
+        const resp = await fetch(API_TURNOS, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${getToken()}`,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(shiftData)
+            body: JSON.stringify(nuevoTurno)
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            alert(error.message || "Error creando turno");
-            return;
-        }
+        if (!resp.ok) throw new Error("Error al agregar turno");
 
-        alert("Turno creado con éxito");
+        mostrarAlerta("Turno agregado correctamente");
         cargarTurnos();
-        limpiarFormulario();
-    } catch (err) {
-        console.error(err);
-        alert("Error al conectar con el servidor");
+    } catch (error) {
+        mostrarAlerta("Error al agregar turno", "error");
+        console.error(error);
     }
 }
 
-//Eliminar turno (ADMIN)
+// Eliminar turno
 async function eliminarTurno(id) {
-    if (!confirm("¿Seguro que quieres eliminar este turno?")) return;
+    if (!confirm("¿Seguro que deseas eliminar este turno?")) return;
 
     try {
-        const response = await fetch(`${API_URL}/${id}`, {
+        const token = getToken();
+        const resp = await fetch(`${API_TURNOS}/${id}`, {
             method: "DELETE",
-            headers: { "Authorization": `Bearer ${getToken()}` }
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            alert(error.message || "Error eliminando turno");
-            return;
-        }
+        if (!resp.ok) throw new Error("Error al eliminar turno");
 
-        alert("Turno eliminado con éxito");
+        mostrarAlerta("Turno eliminado correctamente");
         cargarTurnos();
-    } catch (err) {
-        console.error(err);
-        alert("Error al conectar con el servidor");
+    } catch (error) {
+        mostrarAlerta("Error al eliminar turno", "error");
+        console.error(error);
     }
 }
 
-//Limpiar formulario
-function limpiarFormulario() {
-    document.getElementById('fecha').value = "";
-    document.getElementById('duracion').value = "";
-    document.getElementById('estaciones').value = "";
-    document.getElementById('horario').selectedIndex = 0;
-}
-
-// Cargar turnos al iniciar
-document.addEventListener("DOMContentLoaded", cargarTurnos);
+// Inicializar
+cargarHorarios();
+cargarTurnos();

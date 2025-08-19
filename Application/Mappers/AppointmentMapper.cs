@@ -9,7 +9,7 @@ public static class AppointmentMapper
     {
         return new Appointment()
         {
-            ShiftId = create.ShiftId,
+            SlotId = create.SlotId,
             UserId = create.UserId
         };
     } 

@@ -19,23 +19,33 @@ public class AppointmentValidator
         _logger = logger;
     }
 
-    private async Task ThatShiftExists(string userWhoRequested, int shiftId)
+    private async Task ThatSlotExits(string userWhoRequested, int slotId)
     {
-        if (!await _shiftsRepository.ThatShiftExists(shiftId))
+        if (!await _shiftsRepository.ThatSlotExists(slotId))
         {
             _logger.LogError(
-                "The user {userWhoRequested}, failed to create / update a appointment (That shift doesn't exist)",
+                "The user {userWhoRequested}, failed to create / update a appointment (That slot doesn't exist)",
                 userWhoRequested);
-            throw new ValidationException("That Shift doesn't exist");
+            throw new ValidationException("That slot doesn't exist");
         }
     }
 
     public async Task ValidateCreateAsync(string userWhoRequested, AppointmentCreate create)
     {
-        await this.ThatShiftExists(userWhoRequested, create.ShiftId);
+        await this.ThatSlotExits(userWhoRequested, create.SlotId);
+        
+        if (await _shiftsRepository.ThatSlotIsTaken(create.SlotId))
+        {
+            _logger.LogError(
+                "The user {userWhoRequested}, failed to create a appointment (that slot has already been taken)",
+                userWhoRequested);
+
+            throw new ValidationException("that slot has already been taken ");
+
+        }
 
         bool haveAnotherAppointment =
-            _appointmentsRepository.UserHaveAnotherAppointmentsOnThatDay(create.UserId, create.ShiftId);
+            _appointmentsRepository.UserHaveAnotherAppointmentsOnThatDay(create.UserId, create.SlotId );
         if (haveAnotherAppointment)
         {
             _logger.LogError(
@@ -44,34 +54,25 @@ public class AppointmentValidator
 
             throw new ValidationException("User has another appointment on that same day");
         }
+   }
 
-        if (! await _shiftsRepository.ThatShiftStillAcceptsAppointments(create.ShiftId))
-        {
-            _logger.LogError(
-                "The user {userWhoRequested}, failed to create a appointment (That shift have reached the limit of appointments)",
-                userWhoRequested);
-
-            throw new ValidationException("That shift have reached the limit of appointments");
-        }
-    }
-
-    public async Task ValidateUpdate(string userWhoRequested, int userId, int shiftId)
+    public async Task ValidateUpdate(string userWhoRequested, int userId, int slotid)
     {
         // Nota, aquí validamos solamente que exista dicho appointment
-        await this.ThatShiftExists(userWhoRequested, shiftId);
+        await this.ThatSlotExits(userWhoRequested, slotid);
 
         // Aquí validamos que ese appointment sea de ese usuario.
         // Teniendo en cuenta que un usuario solamente puede tener un appointment por día, basta con
         // encontrar la unica cita en donde coincida su UserId y el ShiftID a la que está suscrito su appointment.
 
-        var appointment = await _appointmentsRepository.GetAppointmentByIdAndShiftIdAsync(userId, shiftId);
+        var appointment = await _appointmentsRepository.GetThatAppointmentByIdAndSlotId(userId, slotid);
         if (appointment == null)
         {
             _logger.LogError(
                 "The user {userWhoRequested}, failed to update the appointment of ID: {shiftId} " +
                 "(That appointment doesn't exist or the user isn't the owner of that appointment)",
                 userWhoRequested,
-                shiftId);
+                slotid);
 
             throw new ValidationException("That appointment doesn't exist");
         }

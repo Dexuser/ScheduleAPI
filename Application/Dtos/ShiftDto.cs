@@ -9,7 +9,7 @@ public class ShiftDto
     [Required] public DateOnly Date { get; set; }
     [Required] public int ServicesSlots { get; set; }
     [Required] public int MeetingDurationOnMinutes { get; set; }
-    
-    [Required] public int  NumberOfSubscribedAppointments  { get; set; }
     [Required] public ScheduleDto Schedule { get; set; }
+    
+    [Required] public IEnumerable<SlotDto> Slots { get; set; }
 }

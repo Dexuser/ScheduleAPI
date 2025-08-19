@@ -16,7 +16,13 @@ public class AppointmentServices
     private readonly IUserRepository _userRepository;
     private readonly IShiftRepository _shiftRepository;
 
-    public AppointmentServices(IAppointmentsRepository appointmentsRepository, AppointmentValidator appointmentValidator, ILogger<AppointmentServices> logger, IEmailSender emailSender, IUserRepository userRepository, IShiftRepository shiftRepository)
+    public AppointmentServices( 
+        IAppointmentsRepository appointmentsRepository,
+        AppointmentValidator appointmentValidator, 
+        ILogger<AppointmentServices> logger,
+        IEmailSender emailSender,
+        IUserRepository userRepository,
+        IShiftRepository shiftRepository)
     {
         _appointmentsRepository = appointmentsRepository;
         _appointmentValidator = appointmentValidator;
@@ -35,7 +41,7 @@ public class AppointmentServices
             _logger.LogInformation(
                 "The user {userWhoRequested} failed to suscribe appointment " +
                 "to the shift of ID: {appointment.ShiftId}",
-                userWhoRequested, appointment.ShiftId);
+                userWhoRequested, appointment.SlotId);
 
             throw new ValidationException("We couldn't create the appointment, someone else booked before you");
         }
@@ -43,16 +49,22 @@ public class AppointmentServices
         _logger.LogInformation(
             "The user {userWhoRequested} successfully created a new appointment" +
             " to the shift of ID: {appointment.ShiftId}",
-            userWhoRequested, appointment.ShiftId);
+            userWhoRequested, appointment.SlotId);
 
         var user = await _userRepository.GetUserByUserNameAsync(userWhoRequested);
-        var shift = await _shiftRepository.GetShiftByIdAsync(appointment.ShiftId);
-   
-        
+        var slot = await _shiftRepository.GetSlotAndShiftBySlotIdAsync(appointment.SlotId);
+
         await _emailSender.SendEmailAsync(
             user.Email,
-            $"Now you have a appointment in the shift #{appointment.ShiftId}",
-            $"We just booked a appointment to the shift #{appointment.ShiftId} in the date: {shift.Date} at your name, {userWhoRequested}");
+            "Your appointment has been created",
+            $"""
+             Hello, {user.UserName}!, whe just booked a appointment at your name. Here it's information:
+             
+             Shift ID: {slot.Shift.Id}.
+             Day: {slot.Shift.Date}.
+             Between: {slot.StartTime} to {slot.EndTime}.
+             """ 
+            );
 
         _logger.LogInformation(
             "We just sent a email to the user: {userWhoRequested} about the creation of their appointment",
@@ -62,31 +74,41 @@ public class AppointmentServices
 
     public async Task UpdateStateAsync(string userWhoRequested, int userId, AppointmentPatch appointment)
     {
-        await _appointmentValidator.ValidateUpdate(userWhoRequested, userId, appointment.ShiftId);
+        await _appointmentValidator.ValidateUpdate(userWhoRequested, userId, appointment.SlotId);
 
         if (appointment.State.HasValue)
         {
-            await _appointmentsRepository.UpdateStateAsync(userId, appointment.ShiftId, appointment.State.Value);
+            await _appointmentsRepository.UpdateStateAsync(userId, appointment.SlotId, appointment.State.Value);
 
             _logger.LogInformation(
                 "The user {userWhoRequested} updated the state of his appointment to {state}. Shift: {appointment.ShiftId}",
                 userWhoRequested,
                 appointment.State,
-                appointment.ShiftId);
+                appointment.SlotId);
 
             var user = await _userRepository.GetUserByUserNameAsync(userWhoRequested);
-            var shift = await _shiftRepository.GetShiftByIdAsync(appointment.ShiftId);
+            var slot = await _shiftRepository.GetSlotAndShiftBySlotIdAsync(appointment.SlotId);
            
+            
             await _emailSender.SendEmailAsync(
                 user.Email,
-                $"The state of your appointment has changed.",
-                $"{userWhoRequested}. Your appointment status has changed to {appointment.State}. Shift ID: {appointment.ShiftId}, date: {shift.Date}");
+                "Your appointment has been updated",
+                $"""
+                 Hello, {user.UserName}!, whe just updated the state of your appointment  Here it's information:
 
+                 Shift ID: {slot.Shift.Id}.
+                 Day: {slot.Shift.Date}.
+                 Appointment ID: {slot.Appointment.Id}. 
+                 Between: {slot.StartTime} to {slot.EndTime}.
+                 New state of your appointment:  {appointment.State}: 
+                 """ 
+            );
+            
             _logger.LogInformation(
                 "We just sent a email to the user: {userWhoRequested} " +
                 "about the Status change of his appointment at the shift {appointment.ShiftId}. ",
                 userWhoRequested,
-                appointment.ShiftId);
+                appointment.SlotId);
             
         }
     }

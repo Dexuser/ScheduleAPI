@@ -6,6 +6,6 @@ namespace Application.Dtos;
 
 public class AppointmentPatch
 {
-    [Required] public int ShiftId { get; set; }
+    [Required] public int SlotId { get; set; }
     public AppointmentState? State { get; set; }
 }

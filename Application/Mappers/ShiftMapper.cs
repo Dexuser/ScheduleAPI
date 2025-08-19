@@ -19,22 +19,25 @@ public static class ShiftMapper
     
     public static ShiftDto ToDto(Shift entity)
     {
-        return new ShiftDto()
-        {
-            Id = entity.Id,
-            Date = entity.Date,
-            ServicesSlots = entity.ServicesSlots,
-            MeetingDurationOnMinutes = entity.MeetingDurationOnMinutes,
-            NumberOfSubscribedAppointments = entity.Appointments.Count(),
-            Schedule = new ScheduleDto()
-            {
-                Id = entity.Schedule.Id,
-                StartTime = entity.Schedule.StartTime,
-                EndTime = entity.Schedule.EndTime,
-                Description = entity.Schedule.Description,
 
-            }
+        var dto = new ShiftDto();
+        dto.Id = entity.Id;
+        dto.Date = entity.Date;
+        dto.ServicesSlots = entity.ServicesSlots;
+        dto.MeetingDurationOnMinutes = entity.MeetingDurationOnMinutes;
+        dto.Schedule = new ScheduleDto()
+        {
+            Id = entity.Schedule.Id,
+            StartTime = entity.Schedule.StartTime,
+            EndTime = entity.Schedule.EndTime,
+            Description = entity.Schedule.Description,
         };
+        if (entity.Slots != null)
+        {
+            dto.Slots = SlotsMapper.ToDto(entity.Slots);
+        }
+        return dto;
+
     }
     
     public static IEnumerable<ShiftDto> ToDto(IEnumerable<Shift> entities)

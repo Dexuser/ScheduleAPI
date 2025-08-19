@@ -11,6 +11,7 @@ public class ScheduleAppContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Schedule> Schedules { get; set; }
     public DbSet<Shift> Shifts { get; set; }
+    public DbSet<Slot> Slots { get; set; }   
 
     public ScheduleAppContext(DbContextOptions<ScheduleAppContext> options) : base(options)
     {
@@ -26,19 +27,19 @@ public class ScheduleAppContext : DbContext
                 .IsRequired()
                 .HasColumnName("UserId");
 
-            entity.Property(e => e.ShiftId)
+            entity.Property(e => e.SlotId)
                 .IsRequired()
-                .HasColumnName("ShiftId");
+                .HasColumnName("SlotId");
 
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Appointments)
                 .HasForeignKey(e => e.UserId)
                 .HasConstraintName("Appointment_UserId_FK");
 
-            entity.HasOne(e => e.Shift)
-                .WithMany(s => s.Appointments)
-                .HasForeignKey(e => e.ShiftId)
-                .HasConstraintName("Appointment_ShiftId_FK");
+            entity.HasOne(e => e.Slot)
+                .WithOne(s => s.Appointment)
+                .HasForeignKey<Appointment>(s => s.SlotId)
+                .HasConstraintName("Appointment_SlotId_FK");
 
             entity.Property(e => e.State)
                 .IsRequired()
@@ -108,6 +109,32 @@ public class ScheduleAppContext : DbContext
                 .WithMany(e => e.Shifts)
                 .HasForeignKey(e => e.ScheduleId)
                 .HasConstraintName("Shift_ScheduleId_FK");
+        });
+
+        modelBuilder.Entity<Slot>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Slot_Id_PK");
+            
+            entity.HasOne(s => s.Shift)
+                .WithMany(s => s.Slots)
+                .HasForeignKey(s => s.ShiftId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("Slot_ShiftId_FK");
+            
+            
+            entity.Property(s => s.StartTime)
+                .IsRequired()
+                .HasColumnType("time(0)")
+                .HasColumnName("StartTime");
+            
+            entity.Property(s => s.EndTime)
+                .IsRequired()
+                .HasColumnType("time(0)")
+                .HasColumnName("EndTime");
+            
+            modelBuilder.Entity<Slot>()
+                .Property(s => s.isTaken)
+                .HasDefaultValue(false); 
         });
 
         modelBuilder.Entity<User>(entity =>

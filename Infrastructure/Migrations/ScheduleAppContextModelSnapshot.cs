@@ -30,9 +30,9 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ShiftId")
+                    b.Property<int>("SlotId")
                         .HasColumnType("int")
-                        .HasColumnName("ShiftId");
+                        .HasColumnName("SlotId");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -47,7 +47,8 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("Appointment_Id_PK");
 
-                    b.HasIndex("ShiftId");
+                    b.HasIndex("SlotId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -134,6 +135,38 @@ namespace Infrastructure.Migrations
                     b.ToTable("Shifts");
                 });
 
+            modelBuilder.Entity("ProyectoFinal.Models.Slot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time(0)")
+                        .HasColumnName("EndTime");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time(0)")
+                        .HasColumnName("StartTime");
+
+                    b.Property<bool>("isTaken")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("Id")
+                        .HasName("Slot_Id_PK");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("Slots");
+                });
+
             modelBuilder.Entity("ProyectoFinal.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -185,12 +218,12 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("ProyectoFinal.Models.Appointment", b =>
                 {
-                    b.HasOne("ProyectoFinal.Models.Shift", "Shift")
-                        .WithMany("Appointments")
-                        .HasForeignKey("ShiftId")
+                    b.HasOne("ProyectoFinal.Models.Slot", "Slot")
+                        .WithOne("Appointment")
+                        .HasForeignKey("ProyectoFinal.Models.Appointment", "SlotId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("Appointment_ShiftId_FK");
+                        .HasConstraintName("Appointment_SlotId_FK");
 
                     b.HasOne("ProyectoFinal.Models.User", "User")
                         .WithMany("Appointments")
@@ -199,7 +232,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("Appointment_UserId_FK");
 
-                    b.Navigation("Shift");
+                    b.Navigation("Slot");
 
                     b.Navigation("User");
                 });
@@ -216,6 +249,18 @@ namespace Infrastructure.Migrations
                     b.Navigation("Schedule");
                 });
 
+            modelBuilder.Entity("ProyectoFinal.Models.Slot", b =>
+                {
+                    b.HasOne("ProyectoFinal.Models.Shift", "Shift")
+                        .WithMany("Slots")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("Slot_ShiftId_FK");
+
+                    b.Navigation("Shift");
+                });
+
             modelBuilder.Entity("ProyectoFinal.Models.Schedule", b =>
                 {
                     b.Navigation("Shifts");
@@ -223,7 +268,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("ProyectoFinal.Models.Shift", b =>
                 {
-                    b.Navigation("Appointments");
+                    b.Navigation("Slots");
+                });
+
+            modelBuilder.Entity("ProyectoFinal.Models.Slot", b =>
+                {
+                    b.Navigation("Appointment")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProyectoFinal.Models.User", b =>

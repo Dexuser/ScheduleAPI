@@ -5,5 +5,5 @@ namespace Application.Dtos;
 public class AppointmentCreate
 {
     [Required] public int UserId { get; set; }
-    [Required] public int ShiftId { get; set; }
+    [Required] public int SlotId { get; set; }
 }

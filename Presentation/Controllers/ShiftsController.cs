@@ -23,22 +23,23 @@ public class ShiftsController : ControllerBase
     }
     
     [HttpGet]
-    [Authorize(Roles = "ADMIN,USER")] 
-    public async Task<ActionResult<IEnumerable<ShiftDto>>> GetAvailableShiftsSinceTodayAsync()
+    [Route("WithoutThisUser")]
+    [Authorize(Roles = "USER")] 
+    public async Task<ActionResult<IEnumerable<ShiftDto>>> GetShiftsWithOutThisUser()
     {
         var user = GetWhoMadeTheRequest();
         var role = User.FindFirstValue(ClaimTypes.Role);
         var userid = Int32.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub));
         
         _logger.LogInformation("the {role} {user} is requesting all the shifts available", role, user);
-        var shifts = await _shiftServices.GetAvailableShiftsSinceTodayAsync(userid);
+        var shifts = await _shiftServices.GetShiftsWithOutThisUser(userid);
         if (shifts.Count() == 0)
         {
             return NotFound();
         }
         return Ok(shifts);
     }
-
+    
     [HttpGet]
     [Route("OfUser")]
     [Authorize(Roles = "USER")]
@@ -50,6 +51,24 @@ public class ShiftsController : ControllerBase
         _logger.LogInformation("the user {user} is requesting all the shifts where they have a slot", username);
         
         var shifts = await _shiftServices.GetShiftsWithThisUserAsync(userId);
+        if (shifts.Count() == 0)
+        {
+            return NotFound();
+        }
+        return Ok(shifts);
+        
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "USER,ADMIN")]
+    public async Task<ActionResult<IEnumerable<ShiftDto>>> GetAllShifts()
+    {
+        var userId = int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)); // taken from the token
+        var username = GetWhoMadeTheRequest();
+        
+        _logger.LogInformation("the user {user} is requesting all the shifts", username); 
+        
+        var shifts = await _shiftServices.GetAllShifts(userId);
         if (shifts.Count() == 0)
         {
             return NotFound();

@@ -7,14 +7,10 @@ public interface IAppointmentsRepository
 {
     Task<bool> CreateAppointmentAsync(Appointment appointment);
 
-    Task<Appointment?> GetAppointmentByIdAndShiftIdAsync(int userId, int shiftId);
+    Task<Appointment?> GetThatAppointmentByIdAndSlotId(int userId, int slotId);
 
-    Task UpdateStateAsync(int userId, int shiftId, AppointmentState state);
+    Task UpdateStateAsync(int userId, int slotId, AppointmentState state);
     
-    bool UserHaveAnotherAppointmentsOnThatDay(int userId, int shiftId); 
+    bool UserHaveAnotherAppointmentsOnThatDay(int userId, int slotId ); 
 
-    // Es posible que este metodo sea inncesario teniendo en cuenta que
-    // podria hacer un metodo en Schedules que me traiga los Appointments
-    // Asociados
-    //Task<IEnumerable<Appointment>> GetAppointmentsAsync();
 }
