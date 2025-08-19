@@ -16,8 +16,6 @@ public class EmailSender : IEmailSender
 
     public async Task SendEmailAsync(string to, string subject, string body)
     {
-        Console.WriteLine($"Sending email to: {to}");
-
         var host = _config["Smtp:Host"];
         var port = int.Parse(_config["Smtp:Port"]);
         var enableSsl = bool.Parse(_config["Smtp:EnableSsl"]);
@@ -40,7 +38,7 @@ public class EmailSender : IEmailSender
 
         mail.To.Add(to);
 
-        // Enviar de forma asíncrona
+     
         await client.SendMailAsync(mail);
     }
 }
